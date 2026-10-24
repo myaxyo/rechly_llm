@@ -1,0 +1,4 @@
+# Use a dedicated Mac venv; do not apply the CPU constraints.txt to this stack.
+-r requirements.txt
+# CLI checked against the upstream v0.32.2 source; Metal runtime remains untested here.
+mlx-lm[train]==0.32.2; sys_platform == 'darwin' and platform_machine == 'arm64'

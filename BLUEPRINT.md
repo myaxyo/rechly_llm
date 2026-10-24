@@ -1,6 +1,10 @@
-# Training Blueprint: Rechly Local German AI Model (Rechly-DE-3B)
+# Rechly Research Design & Training Blueprint
 
-This document contains the **complete blueprint, synthetic data generation prompt, training pipeline, and Ollama integration** to fine-tune a specialized, 100% local, GDPR/DSGVO-compliant German accounting model for Rechly.
+The target is a small German accounting assistant for local inference in Rechly. The initial candidate is Qwen2.5-3B-Instruct, with optional LoRA fine-tuning and GGUF quantization. This is a research choice, not a measured winner.
+
+The pipeline is: reviewed ShareGPT data → validated independent splits → baseline evaluation → training → export → equivalent evaluation → human review → versioned release. See [training](docs/TRAINING.md) and [release criteria](docs/RELEASE.md).
+
+Scope includes invoice extraction, professional line-item wording, tax-clause suggestions, dunning drafts and expense categorization. The model proposes drafts; the application and user remain responsible for business facts and tax decisions. Do not train on identifiable customer invoices without an appropriate authorized data process.
 
 ---
 
@@ -18,12 +22,12 @@ This document contains the **complete blueprint, synthetic data generation promp
 
 ## 2. Master Prompt: Synthetic Dataset Generation
 
-Use this prompt with a frontier LLM (Claude 3.5 Sonnet, GPT-4o, or Gemini 1.5 Pro) to generate 1,500–3,000 diverse training examples in **ShareGPT JSONL format**.
+Use this prompt with a frontier LLM (Claude 3.5 Sonnet, GPT-4o, or Gemini 1.5 Pro) to generate diverse training examples in **ShareGPT JSONL format**.
 
 ```markdown
 You are a German Tax Advisor (Steuerberater) and Senior Machine Learning Engineer building a specialized training dataset for "Rechly-DE-3B", an open-source German invoicing and bookkeeping model.
 
-Generate 50 diverse training pairs in ShareGPT JSON format covering the 5 core domains below. All German texts must follow German GoBD standards, official tax laws (UStG), and standard B2B business etiquette.
+Generate diverse training pairs in ShareGPT JSON format covering the 5 core domains below. All German texts must follow German GoBD standards, official tax laws (UStG), and standard B2B business etiquette.
 
 ### Domain 1: Text-to-Invoice (Strict JSON Extraction)
 - Input: Natural, colloquial German sentence describing an invoice (e.g. "Rechnung an WebTech GmbH: 14 Stunden Frontend-Entwicklung à 95€ und 1x SSL Zertifikat Pauschal 60€, zahlbar in 14 Tagen mit 2% Skonto").
@@ -116,3 +120,4 @@ Format each example as a single JSON line:
 - **Hugging Face Model Card (`MODEL_CARD.md`)**: Complete model card ready for Hugging Face Hub with metadata tags.
 - **CV & Job Search Guide (`CV_PORTFOLIO_GUIDE.md`)**: Comprehensive technical interview guide, quantifiable metrics, and LinkedIn portfolio templates.
 
+*Note on empirical methodology: Record hardware, memory, runtime, model revision, dataset hashes, inference parameters and failure examples for every experiment. Claims about tokens per second, memory footprint, training time or legal correctness require evidence.*

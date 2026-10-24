@@ -36,6 +36,12 @@ def train(args):
     print(f"Epochs:         {args.epochs}")
     print("==================================================\n")
 
+    if not torch.cuda.is_available():
+        raise RuntimeError("CUDA GPU required for Unsloth training")
+    from validate_dataset import validate_file
+    if not validate_file(Path(args.data)):
+        raise ValueError("Training dataset failed validation")
+
     # 1. Load Base Model in 4-bit
     print("1. Loading base model in 4-bit...")
     model, tokenizer = FastLanguageModel.from_pretrained(

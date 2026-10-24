@@ -2,13 +2,14 @@
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Base Model](https://img.shields.io/badge/Base%20Model-Qwen%202.5%203B%20Instruct-brightgreen.svg)](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct)
+[![Hugging Face](https://img.shields.io/badge/Hugging%20Face-jonprompter%2Frechly--de--3b-yellow.svg)](https://huggingface.co/jonprompter/rechly-de-3b)
 [![Benchmark](https://img.shields.io/badge/Benchmark-100%25%20Pass%20(8%2F8)-success.svg)](scripts/evaluate_model.py)
 [![Colab T4](https://img.shields.io/badge/Colab%20Training-Free%20T4%20GPU%20($0)-orange.svg)](notebooks/rechly_de_3b_training_colab.ipynb)
 [![Ollama Ready](https://img.shields.io/badge/Ollama-Ready-black.svg)](Modelfile)
 [![Test Suite](https://img.shields.io/badge/Tests-31%20Passed-emerald.svg)](tests/)
 [![DSGVO Compliance](https://img.shields.io/badge/DSGVO%2FGDPR-100%25%20On--Device-blueviolet.svg)](#-specifications--highlights)
 
-**Rechly-DE-3B** is a specialized, lightweight (3 Billion parameters), privacy-first German accounting language model engineered specifically for **[Rechly](https://rechly.de)** and the German open-source AI ecosystem. It operates **100% locally** on Apple Silicon (M1/M2/M3/M4) and standard CPUs, providing complete **DSGVO / GDPR compliance** with zero data leaving your hardware.
+**Rechly-DE-3B** is a specialized, lightweight (3 Billion parameters), privacy-first German accounting language model and research toolkit engineered specifically for **[Rechly](https://rechly.de)** and the German open-source AI ecosystem. It operates **100% locally** on Apple Silicon (M1/M2/M3/M4) and standard CPUs, providing complete **DSGVO / GDPR compliance** with zero data leaving your hardware.
 
 ---
 
@@ -18,7 +19,7 @@
 | :--- | :--- |
 | **Base Architecture** | `Qwen/Qwen2.5-3B-Instruct` (Apache 2.0 open-weights) |
 | **Quantization** | GGUF `Q4_K_M` (~1.84 GB file size) |
-| **RAM Footprint** | **< 2.5 GB RAM** (Runs comfortably on any MacBook or 4GB VPS) |
+| **RAM Footprint** | **< 2.5 GB RAM** (Runs comfortably on any MacBook Air or 4GB VPS) |
 | **Inference Speed** | **60–80+ tokens/sec** via Ollama on Apple Silicon Metal |
 | **Fine-Tuning Methods** | **Apple MLX** (native Apple Silicon Metal), **PyTorch MPS / PEFT**, or **Unsloth** (Colab T4) |
 | **Dataset Engine** | 100% Open-Source GoBD/UStG generation engine (800+ balanced, verified training pairs) |
@@ -77,6 +78,11 @@ rechly_llm/
 │   └── schemas/
 │       ├── invoice_schema.json          # Strict JSON schema for Text-to-Invoice output
 │       └── expense_schema.json          # Strict JSON schema for SKR03/SKR04 output
+├── docs/                                # Documentation and technical guides
+│   ├── MAC_QUICKSTART.md                # Dedicated Apple Silicon Metal guide
+│   ├── TRAINING.md                      # Fine-tuning workflows (MLX, PyTorch, Colab)
+│   ├── RELEASE.md                       # Release criteria & benchmarking standards
+│   └── PROVENANCE.md                    # Data provenance and audit documentation
 ├── web/
 │   └── index.html                       # Modern dark-mode German AI Playground UI
 ├── notebooks/
@@ -84,6 +90,7 @@ rechly_llm/
 ├── scripts/
 │   ├── rechly_client.py                 # Official typed Python Client SDK for Rechly
 │   ├── cli.py                           # Ergonomic command-line developer utility
+│   ├── upload_to_hf.py                  # Hugging Face deployment script
 │   ├── dataset_generator_engine.py      # 100% open-source offline dataset generator engine
 │   ├── generate_dataset.py              # Multi-provider synthetic dataset generator (engine/ollama/APIs)
 │   ├── validate_dataset.py              # Schema, GoBD, and deduplication integrity validator
@@ -92,7 +99,8 @@ rechly_llm/
 │   ├── train_unsloth.py                 # QLoRA training script for CUDA / Google Colab
 │   ├── export_gguf.py                   # GGUF verification, adapter merging, and quantization helper
 │   ├── evaluate_model.py                # Automated 5-domain evaluation benchmark (100% score)
-│   └── serve_api.py                     # Local REST API & OpenAI-compatible gateway with Web UI
+│   ├── serve_api.py                     # Local REST API & OpenAI-compatible gateway with Web UI
+│   └── serve_demo.py                    # Lightweight standalone demo server
 └── tests/
     ├── test_schemas.py                  # Schema compliance unit tests
     ├── test_dataset.py                  # Dataset validation tests
@@ -100,7 +108,9 @@ rechly_llm/
     ├── test_client.py                   # Python SDK client unit tests
     ├── test_cli.py                      # CLI tool tests
     ├── test_api.py                      # Basic FastAPI gateway tests
-    └── test_api_endpoints.py            # Comprehensive integration tests for all REST endpoints
+    ├── test_api_endpoints.py            # Comprehensive integration tests for all REST endpoints
+    ├── test_demo.py                     # Standalone demo tests
+    └── test_mlx_workflow.py             # MLX workflow tests
 ```
 
 ---
@@ -110,7 +120,7 @@ rechly_llm/
 ### 1. Installation
 
 ```bash
-git clone https://github.com/rechly/rechly_llm.git
+git clone https://github.com/myaxyo/rechly_llm.git
 cd rechly_llm
 python3 -m venv --system-site-packages venv
 source venv/bin/activate
@@ -119,15 +129,20 @@ pip install -r requirements.txt
 
 *(Or simply run `make install`)*
 
-### 2. Validate Existing Dataset
-Validate the pre-packaged 800-sample balanced GoBD dataset:
+### 2. Validate Existing Datasets
 ```bash
+python scripts/validate_dataset.py data/seed_dataset.jsonl
 python scripts/validate_dataset.py data/rechly_german_accounting.jsonl
 ```
 
 ### 3. Register Model in Ollama
 ```bash
 ollama create rechly-de-3b -f Modelfile
+```
+
+Or run directly from Hugging Face:
+```bash
+ollama run hf.co/jonprompter/rechly-de-3b
 ```
 
 ### 4. Run the 5-Domain Benchmark
@@ -205,6 +220,15 @@ print(expense["deductible_percent"]) # 70
 
 ---
 
+## 🍏 Apple Silicon Mac Toolkit
+
+For native macOS and Apple Silicon workflows:
+- Run `./scripts/setup_mac.sh` to initialize the dedicated Metal environment.
+- See [`docs/MAC_QUICKSTART.md`](docs/MAC_QUICKSTART.md) for step-by-step local fine-tuning instructions.
+- Fine-tune via MLX: `python scripts/train_mlx.py --data data/rechly_german_accounting.jsonl --iters 200`.
+
+---
+
 ## 🐳 Docker Deployment
 
 Run the complete gateway and Ollama stack with a single command:
@@ -215,39 +239,20 @@ Access the gateway and playground at `http://localhost:8000`.
 
 ---
 
-## 🏋️ Fine-Tuning Pipelines
-
-### Option A: Local Mac with Apple Silicon (MLX)
-Fine-tune directly on your Mac GPU using Apple's native MLX framework:
-```bash
-python scripts/train_mlx.py --data data/rechly_german_accounting.jsonl --iters 200 --batch-size 2
-```
-
-### Option B: PyTorch + PEFT LoRA (Apple Silicon Metal MPS / Linux CUDA / CPU)
-Train with standard open-source PyTorch with hardware acceleration:
-```bash
-python scripts/train_hf_mps.py --data data/rechly_german_accounting.jsonl --epochs 2 --batch-size 2
-```
-
-### Option C: Google Colab (Free T4 GPU, $0 Cost)
-Open [`notebooks/rechly_de_3b_training_colab.ipynb`](notebooks/rechly_de_3b_training_colab.ipynb) in Google Colab with free T4 GPU runtime.
-
----
-
 ## 🧪 Automated Test Suite
 
-Run all 31 unit and integration tests:
+Run the full automated test suite:
 ```bash
 pytest tests/ -v
 ```
 
 ---
 
-## 💼 Career & Portfolio
+## 💼 Career & Portfolio Guide
 
 See [`CV_PORTFOLIO_GUIDE.md`](CV_PORTFOLIO_GUIDE.md) for ready-to-use resume bullet points, interview technical deep-dive answers, and LinkedIn showcase templates.
 
-For the Hugging Face Hub model card and metadata, see [`MODEL_CARD.md`](MODEL_CARD.md).
+For the Hugging Face Hub model card and metadata, see [`MODEL_CARD.md`](MODEL_CARD.md) and [https://huggingface.co/jonprompter/rechly-de-3b](https://huggingface.co/jonprompter/rechly-de-3b).
 
 ---
 
@@ -255,13 +260,13 @@ For the Hugging Face Hub model card and metadata, see [`MODEL_CARD.md`](MODEL_CA
 
 1. Open your Rechly web app and navigate to **Einstellungen $\to$ KI** (`/dashboard/settings`).
 2. Select **KI-Anbieter**: `Ollama (Lokal / DSGVO-konform)`.
-3. In the **Modell** field, select or type: `rechly-de-3b`.
+3. In the **Modell** field, select or type: `rechly-de-3b` (or `hf.co/jonprompter/rechly-de-3b`).
 4. Ensure the **Server-URL** is `http://localhost:11434/v1` (or `http://localhost:8000/v1` for the API Gateway).
 5. Click **KI-Einstellungen speichern** and **KI testen**.
 6. The **Text-zu-Rechnung** prompt bar, line item optimizers, and dunning generator in Rechly will now run 100% privately, securely, and locally!
 
 ---
 
-## 📜 License & Compliance
+## 📜 Contributing & License
 
-Distributed under the Apache 2.0 License. All tax logic and statutory citations comply with German tax law (UStG, GoBD, EStG).
+Read [`CONTRIBUTING.md`](CONTRIBUTING.md) for contribution guidelines. Distributed under the Apache 2.0 License. All tax logic and statutory citations comply with German tax law (UStG, GoBD, EStG).

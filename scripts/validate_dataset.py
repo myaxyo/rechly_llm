@@ -10,15 +10,12 @@ Usage:
 import sys
 import os
 import json
+from json_utils import loads as strict_loads
 import hashlib
 from pathlib import Path
 from typing import Dict, Any, List, Tuple
 
-try:
-    from jsonschema import validate, ValidationError
-except ImportError:
-    validate = None
-    ValidationError = Exception
+from jsonschema import validate, ValidationError
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 INVOICE_SCHEMA_PATH = PROJECT_ROOT / "data" / "schemas" / "invoice_schema.json"
@@ -60,9 +57,13 @@ def validate_sharegpt_record(record: Dict[str, Any], line_num: int) -> Tuple[boo
         return False, "Missing 'conversations' key at root", "unknown"
     
     convs = record["conversations"]
-    if not isinstance(convs, list) or len(convs) < 2:
-        return False, f"Conversations must be a list with at least 2 items, got {len(convs) if isinstance(convs, list) else type(convs)}", "unknown"
+    if not isinstance(convs, list) or len(convs) != 2:
+        return False, f"Conversations must be a list with exactly 2 items, got {len(convs) if isinstance(convs, list) else type(convs)}", "unknown"
     
+    for msg in convs:
+        if not isinstance(msg, dict) or not isinstance(msg.get("value"), str):
+            return False, "Messages must be objects with string values", "unknown"
+
     human_msg = convs[0]
     gpt_msg = convs[1]
 
@@ -75,12 +76,14 @@ def validate_sharegpt_record(record: Dict[str, Any], line_num: int) -> Tuple[boo
     human_val = human_msg["value"].strip()
     gpt_val = gpt_msg["value"].strip()
     domain = identify_domain(human_val, gpt_val)
+    if gpt_val.startswith(("{", "[")) and domain not in ("domain_1_text_to_invoice", "domain_5_skr_expenses"):
+        return False, "Unrecognized structured response", "unknown"
 
     # Domain 1 validation: Strict Invoice JSON
     if domain == "domain_1_text_to_invoice":
         try:
-            data = json.loads(gpt_val)
-        except json.JSONDecodeError as e:
+            data = strict_loads(gpt_val)
+        except ValueError as e:
             return False, f"Domain 1 GPT response is not valid JSON: {e}", domain
 
         if validate and INVOICE_SCHEMA:
@@ -101,8 +104,8 @@ def validate_sharegpt_record(record: Dict[str, Any], line_num: int) -> Tuple[boo
     # Domain 5 validation: Strict Expense JSON
     elif domain == "domain_5_skr_expenses":
         try:
-            data = json.loads(gpt_val)
-        except json.JSONDecodeError as e:
+            data = strict_loads(gpt_val)
+        except ValueError as e:
             return False, f"Domain 5 GPT response is not valid JSON: {e}", domain
 
         if validate and EXPENSE_SCHEMA:
@@ -146,8 +149,8 @@ def validate_file(file_path: Path) -> bool:
                 continue
 
             try:
-                record = json.loads(line_str)
-            except json.JSONDecodeError as e:
+                record = strict_loads(line_str)
+            except ValueError as e:
                 errors.append(f"Line {idx}: JSONDecodeError - {e}")
                 continue
 
@@ -185,6 +188,10 @@ def validate_file(file_path: Path) -> bool:
         pct = (cnt / valid_lines * 100) if valid_lines > 0 else 0
         print(f"  * {label}: {cnt} ({pct:.1f}%)")
 
+    if valid_lines == 0 and not errors:
+        errors.append("Dataset contains no examples")
+    if duplicate_count:
+        errors.append(f"Dataset contains {duplicate_count} duplicate prompts")
     if errors:
         print("\n--- Errors Found ---")
         for err in errors[:15]:
@@ -193,7 +200,7 @@ def validate_file(file_path: Path) -> bool:
             print(f"  ... and {len(errors) - 15} more errors.")
         return False
 
-    print("\n[SUCCESS] Dataset is 100% valid and ready for training!")
+    print("\n[SUCCESS] Dataset passed structural validation; factual review is still required.")
     return True
 
 

@@ -7,10 +7,13 @@ Requirements:
     pip install mlx mlx-lm
 
 Usage:
-    python scripts/train_mlx.py --data data/rechly_german_accounting.jsonl --epochs 3
+    python scripts/train_mlx.py --data data/rechly_german_accounting.jsonl --iters 200
 """
 
-import os
+import platform
+import hashlib
+import importlib.metadata
+from datetime import datetime, timezone
 import sys
 import json
 import argparse
@@ -143,7 +146,7 @@ def main():
     parser.add_argument("--model", type=str, default="mlx-community/Qwen2.5-3B-Instruct-4bit", help="Base model identifier on HuggingFace")
     parser.add_argument("--data", type=str, default="data/rechly_german_accounting.jsonl", help="Input ShareGPT JSONL file")
     parser.add_argument("--adapter-path", type=str, default="adapters/rechly-de-3b-lora", help="Output path for LoRA adapter weights")
-    parser.add_argument("--batch-size", type=int, default=2)
+    parser.add_argument("--batch-size", type=int, default=1)
     parser.add_argument("--iters", type=int, default=200, help="Training iterations")
     parser.add_argument("--learning-rate", type=float, default=1e-4)
     parser.add_argument("--save-every", type=int, default=50)

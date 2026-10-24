@@ -109,7 +109,8 @@ def export_with_unsloth(model_dir: str, output_name: str, quant_method: str):
         print("Unsloth not detected. To convert using llama.cpp instead:")
         print("1. git clone https://github.com/ggerganov/llama.cpp")
         print("2. python llama.cpp/convert_hf_to_gguf.py <model_dir> --outfile output.gguf")
-        print("3. ./llama.cpp/llama-quantize output.gguf rechly-de-3b-q4_k_m.gguf Q4_K_M")
+        print("3. ./llama.cpp/build/bin/llama-quantize output.gguf rechly-de-3b-q4_k_m.gguf Q4_K_M")
+        raise SystemExit(1)
 
 
 def main():
