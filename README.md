@@ -3,10 +3,10 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Base Model](https://img.shields.io/badge/Base%20Model-Qwen%202.5%203B%20Instruct-brightgreen.svg)](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct)
 [![Hugging Face](https://img.shields.io/badge/Hugging%20Face-jonprompter%2Frechly--de--3b-yellow.svg)](https://huggingface.co/jonprompter/rechly-de-3b)
+[![Ollama Hub](https://img.shields.io/badge/Ollama%20Hub-mrmuhammadiy%2FRechly--DE--3B-black.svg)](https://ollama.com/mrmuhammadiy/Rechly-DE-3B)
 [![Benchmark](https://img.shields.io/badge/Benchmark-100%25%20Pass%20(8%2F8)-success.svg)](scripts/evaluate_model.py)
 [![Colab T4](https://img.shields.io/badge/Colab%20Training-Free%20T4%20GPU%20($0)-orange.svg)](notebooks/rechly_de_3b_training_colab.ipynb)
-[![Ollama Ready](https://img.shields.io/badge/Ollama-Ready-black.svg)](Modelfile)
-[![Test Suite](https://img.shields.io/badge/Tests-31%20Passed-emerald.svg)](tests/)
+[![Test Suite](https://img.shields.io/badge/Tests-91%20Passed-emerald.svg)](tests/)
 [![DSGVO Compliance](https://img.shields.io/badge/DSGVO%2FGDPR-100%25%20On--Device-blueviolet.svg)](#-specifications--highlights)
 
 **Rechly-DE-3B** is a specialized, lightweight (3 Billion parameters), privacy-first German accounting language model and research toolkit engineered specifically for **[Rechly](https://rechly.de)** and the German open-source AI ecosystem. It operates **100% locally** on Apple Silicon (M1/M2/M3/M4) and standard CPUs, providing complete **DSGVO / GDPR compliance** with zero data leaving your hardware.
@@ -135,7 +135,14 @@ python scripts/validate_dataset.py data/seed_dataset.jsonl
 python scripts/validate_dataset.py data/rechly_german_accounting.jsonl
 ```
 
-### 3. Register Model in Ollama
+### 3. Run with Ollama
+
+Run directly from Ollama Hub:
+```bash
+ollama run mrmuhammadiy/Rechly-DE-3B
+```
+
+Or build locally from source:
 ```bash
 ollama create rechly-de-3b -f Modelfile
 ```
