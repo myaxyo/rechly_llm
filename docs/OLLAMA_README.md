@@ -1,11 +1,26 @@
-# Short Summary / Description (for Ollama "Edit Summary"):
-```text
-100% Local, DSGVO-compliant German Accounting AI for GoBD Invoicing, UStG Clauses & DATEV SKR03/SKR04 Bookkeeping.
-```
+# Ollama Model Page Guide (`jonprompter/Rechly-DE-3B`)
+
+URL: **[https://ollama.com/jonprompter/Rechly-DE-3B](https://ollama.com/jonprompter/Rechly-DE-3B)**
 
 ---
 
-# Ollama README Markdown (Copy & Paste below into Ollama Web Editor):
+## 1. Description / Model Summary
+
+On the model page, click **`Edit`** next to the model title (where it says "No model summary" or existing text):
+
+### Copy & Paste this exact 1-sentence summary:
+```text
+100% Local, DSGVO-compliant German Accounting AI for GoBD Invoicing, UStG Clauses & DATEV SKR03/SKR04 Bookkeeping.
+```
+Click **`Save changes`**.
+
+---
+
+## 2. Model Readme (Markdown)
+
+On the model page, scroll down to the **`Readme`** section and click the **`Edit`** button (or pencil icon).
+
+### Complete Markdown (also available directly in [OLLAMA_HUB_PAGE.md](file:///Users/jon/Documents/privateProjects/rechly_llm/docs/OLLAMA_HUB_PAGE.md)):
 
 ```markdown
 # Rechly-DE-3B: 100% Local German Accounting AI Model 🇩🇪
@@ -32,6 +47,11 @@ Operating **100% locally** with zero external API calls, Rechly-DE-3B ensures co
 Run directly in your terminal:
 ```bash
 ollama run jonprompter/Rechly-DE-3B
+```
+
+Or run via Hugging Face GGUF integration:
+```bash
+ollama run hf.co/jonprompter/rechly-de-3b
 ```
 
 ---
@@ -127,10 +147,30 @@ ollama run jonprompter/Rechly-DE-3B "Kategorisiere für SKR03 und SKR04: 'Gesch�
 
 ---
 
+## 💻 Python Client Example
+
+```python
+from ollama import chat
+
+response = chat(
+    model="jonprompter/Rechly-DE-3B",
+    messages=[{
+        "role": "user",
+        "content": "Kategorisiere für SKR03: Taxi zum Kunden 45 Euro"
+    }]
+)
+print(response.message.content)
+```
+
+---
+
 ## 🔗 Links & Resources
 
 - **GitHub Repository**: [https://github.com/myaxyo/rechly_llm](https://github.com/myaxyo/rechly_llm)
 - **Hugging Face Hub**: [https://huggingface.co/jonprompter/rechly-de-3b](https://huggingface.co/jonprompter/rechly-de-3b)
-- **Official Product**: [Rechly Invoicing](https://rechly.de)
+- **Official Product**: [Rechly Invoicing (rechly.de)](https://rechly.de)
+- **Base Architecture**: Qwen 2.5 3B Instruct
 - **License**: Apache 2.0
 ```
+
+Click **`Save changes`** (or press `Cmd + Enter`).
