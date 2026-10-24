@@ -77,19 +77,41 @@ TEST_CASES = [
 
 
 def query_model(prompt: str, model: str, base_url: str, api_key: str = "ollama", system: str = None) -> str:
-    from openai import OpenAI
-    client = OpenAI(base_url=base_url, api_key=api_key)
     messages = []
     if system:
         messages.append({"role": "system", "content": system})
     messages.append({"role": "user", "content": prompt})
 
-    resp = client.chat.completions.create(
-        model=model,
-        messages=messages,
-        temperature=0.1,
-    )
-    return resp.choices[0].message.content or ""
+    endpoint = base_url.rstrip("/") + "/chat/completions"
+    payload = {
+        "model": model,
+        "messages": messages,
+        "temperature": 0.1,
+    }
+
+    try:
+        import requests
+        resp = requests.post(
+            endpoint,
+            json=payload,
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            timeout=60,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        return data["choices"][0]["message"]["content"] or ""
+    except ImportError:
+        import urllib.request
+        req_data = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(
+            endpoint,
+            data=req_data,
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=60) as response:
+            data = json.loads(response.read().decode("utf-8"))
+            return data["choices"][0]["message"]["content"] or ""
 
 
 def evaluate(model: str, base_url: str):
