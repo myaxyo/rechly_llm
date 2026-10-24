@@ -166,7 +166,6 @@ def query_llm(
         return resp.choices[0].message.content or ""
 
     elif provider == "ollama":
-    elif provider == "ollama":
         endpoint = base_url or "http://localhost:11434"
         if endpoint.endswith("/v1"):
             endpoint = endpoint[:-3]
