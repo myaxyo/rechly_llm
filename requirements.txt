@@ -1,0 +1,22 @@
+# Core generation, validation and utilities
+openai>=1.20.0
+anthropic>=0.20.0
+pydantic>=2.5.0
+jsonschema>=4.20.0
+tqdm>=4.66.0
+python-dotenv>=1.0.1
+requests>=2.31.0
+
+# Evaluation & Testing
+pytest>=8.0.0
+
+# Optional: Apple Silicon Local Training (MLX)
+# Run: pip install mlx mlx-lm
+# mlx>=0.16.0
+# mlx-lm>=0.18.0
+
+# Optional: Linux / Colab CUDA Training (Unsloth & Transformers)
+# Run inside Colab / Linux GPU environment:
+# pip install --no-deps "xformers<0.0.27" "trl<0.9.0" peft accelerate bitsandbytes
+# pip install "unsloth[colab-new] @ git+https://github.com/unslothai/unsloth.git"
+# datasets>=2.19.0

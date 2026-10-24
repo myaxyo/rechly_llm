@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RechlyExpenseCategorization",
+  "description": "Standard JSON format for SKR03/SKR04 expense categorization in Rechly",
+  "type": "object",
+  "required": ["category", "vat_rate", "deductible_percent", "skr03_account", "skr04_account", "note"],
+  "properties": {
+    "category": {
+      "type": "string",
+      "description": "Standard business expense category name"
+    },
+    "vat_rate": {
+      "type": "integer",
+      "enum": [0, 7, 19],
+      "description": "Applicable German input VAT rate (Vorsteuer)"
+    },
+    "deductible_percent": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Tax deductible percentage (e.g. 70 for Bewirtung, 100 for standard expenses)"
+    },
+    "skr03_account": {
+      "type": "string",
+      "pattern": "^[0-9]{4}$",
+      "description": "4-digit DATEV SKR03 account number"
+    },
+    "skr04_account": {
+      "type": "string",
+      "pattern": "^[0-9]{4}$",
+      "description": "4-digit DATEV SKR04 account number"
+    },
+    "note": {
+      "type": "string",
+      "description": "GoBD compliance note explaining tax treatment and receipts requirements"
+    }
+  }
+}

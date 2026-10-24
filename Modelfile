@@ -1,0 +1,17 @@
+FROM ./rechly-de-3b-q4_k_m.gguf
+
+TEMPLATE """{{ if .System }}<|im_start|>system
+{{ .System }}<|im_end|>
+{{ end }}{{ if .Prompt }}<|im_start|>user
+{{ .Prompt }}<|im_end|>
+{{ end }}<|im_start|>assistant
+{{ .Response }}<|im_end|>
+"""
+
+PARAMETER stop "<|im_start|>"
+PARAMETER stop "<|im_end|>"
+PARAMETER temperature 0.2
+PARAMETER top_p 0.95
+
+SYSTEM """Du bist der offizielle Rechly KI-Buchhaltungsassistent für Deutschland.
+Du erstellst präzise, GoBD-konforme Rechnungsdaten im exakten JSON-Format und formulierst professionelle deutsche Geschäftskorrespondenz."""

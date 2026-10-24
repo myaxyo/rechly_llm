@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RechlyInvoiceDraft",
+  "description": "Standard JSON format for Text-to-Invoice generation in Rechly",
+  "type": "object",
+  "required": ["client_name", "due_days", "items"],
+  "properties": {
+    "client_id": {
+      "type": ["string", "null"],
+      "description": "Matching client ID from customer database if provided"
+    },
+    "client_name": {
+      "type": "string",
+      "description": "Full name or business name of the client"
+    },
+    "due_days": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Payment period in days (standard: 14)"
+    },
+    "payment_terms": {
+      "type": ["string", "null"],
+      "description": "Payment condition clause (e.g., 2% Skonto binnen 7 Tagen)"
+    },
+    "notes": {
+      "type": ["string", "null"],
+      "description": "Closing greetings or statutory remarks"
+    },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["description", "quantity", "unit_of_measure", "price", "tax_rate_percent"],
+        "properties": {
+          "description": {
+            "type": "string",
+            "minLength": 3
+          },
+          "quantity": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "unit_of_measure": {
+            "type": "string",
+            "enum": ["Stunde", "Stück", "Tag", "Pauschal", "Monat"]
+          },
+          "price": {
+            "type": "number",
+            "minimum": 0
+          },
+          "tax_rate_percent": {
+            "type": "integer",
+            "enum": [0, 7, 19]
+          }
+        }
+      }
+    }
+  }
+}
