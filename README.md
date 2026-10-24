@@ -3,7 +3,7 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Base Model](https://img.shields.io/badge/Base%20Model-Qwen%202.5%203B%20Instruct-brightgreen.svg)](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct)
 [![Hugging Face](https://img.shields.io/badge/Hugging%20Face-jonprompter%2Frechly--de--3b-yellow.svg)](https://huggingface.co/jonprompter/rechly-de-3b)
-[![Ollama Hub](https://img.shields.io/badge/Ollama%20Hub-mrmuhammadiy%2FRechly--DE--3B-black.svg)](https://ollama.com/mrmuhammadiy/Rechly-DE-3B)
+[![Ollama Hub](https://img.shields.io/badge/Ollama%20Hub-jonprompter%2FRechly--DE--3B-black.svg)](https://ollama.com/jonprompter/Rechly-DE-3B)
 [![Benchmark](https://img.shields.io/badge/Benchmark-100%25%20Pass%20(8%2F8)-success.svg)](scripts/evaluate_model.py)
 [![Colab T4](https://img.shields.io/badge/Colab%20Training-Free%20T4%20GPU%20($0)-orange.svg)](notebooks/rechly_de_3b_training_colab.ipynb)
 [![Test Suite](https://img.shields.io/badge/Tests-91%20Passed-emerald.svg)](tests/)
@@ -139,7 +139,7 @@ python scripts/validate_dataset.py data/rechly_german_accounting.jsonl
 
 Run directly from Ollama Hub:
 ```bash
-ollama run mrmuhammadiy/Rechly-DE-3B
+ollama run jonprompter/Rechly-DE-3B
 ```
 
 Or build locally from source:
