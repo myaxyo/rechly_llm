@@ -52,3 +52,10 @@ data/generated/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Local experiments and test outputs
+reports/
+adapters/
+.pytest_cache/
+.coverage
+.venv-mac/

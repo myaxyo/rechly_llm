@@ -17,6 +17,7 @@ Usage:
 import os
 import sys
 import json
+from json_utils import loads as strict_loads
 import time
 import argparse
 import random
@@ -125,7 +126,7 @@ def query_llm(
     """Dispatches request to specified LLM provider."""
     if provider == "openai":
         from openai import OpenAI
-        client = OpenAI(api_key=api_key or os.environ.get("OPENAI_API_KEY"), base_url=base_url)
+        client = OpenAI(api_key=api_key or os.environ.get("OPENAI_API_KEY"), base_url=base_url, timeout=60, max_retries=0)
         resp = client.chat.completions.create(
             model=model,
             messages=[
@@ -138,7 +139,7 @@ def query_llm(
 
     elif provider == "anthropic":
         import anthropic
-        client = anthropic.Anthropic(api_key=api_key or os.environ.get("ANTHROPIC_API_KEY"))
+        client = anthropic.Anthropic(api_key=api_key or os.environ.get("ANTHROPIC_API_KEY"), timeout=60, max_retries=0)
         resp = client.messages.create(
             model=model,
             max_tokens=4096,
@@ -151,7 +152,7 @@ def query_llm(
     elif provider == "openrouter":
         from openai import OpenAI
         client = OpenAI(
-            base_url="https://openrouter.ai/api/v1",
+            base_url="https://openrouter.ai/api/v1", timeout=60, max_retries=0,
             api_key=api_key or os.environ.get("OPENROUTER_API_KEY"),
         )
         resp = client.chat.completions.create(
@@ -167,7 +168,7 @@ def query_llm(
     elif provider == "ollama":
         from openai import OpenAI
         client = OpenAI(
-            base_url=base_url or "http://localhost:11434/v1",
+            base_url=base_url or "http://localhost:11434/v1", timeout=60, max_retries=0,
             api_key="ollama",
         )
         resp = client.chat.completions.create(
@@ -195,22 +196,38 @@ def count_existing_domain_samples(file_path: Path) -> Dict[str, int]:
             if not line_str:
                 continue
             try:
-                data = json.loads(line_str)
+                data = strict_loads(line_str)
                 h_val = data["conversations"][0]["value"]
                 g_val = data["conversations"][1]["value"]
                 dom = identify_domain(h_val, g_val)
-                # Map domain name
-                for k in counts:
-                    if k in dom:
-                        counts[k] += 1
-                        break
+                mapping = dict(zip(
+                    ["domain_1_text_to_invoice", "domain_2_line_item_enhancement",
+                     "domain_3_tax_compliance", "domain_4_dunning", "domain_5_skr_expenses"],
+                    DOMAINS_SPEC))
+                if dom in mapping:
+                    counts[mapping[dom]] += 1
             except Exception:
                 continue
     return counts
 
 
 def run_generation(args):
+    if args.batch_size < 1 or args.max_attempts < 1 or (args.count is not None and args.count < 1):
+        raise ValueError("batch-size, count and max-attempts must be positive")
+    required_key = {"openai": "OPENAI_API_KEY", "anthropic": "ANTHROPIC_API_KEY",
+                    "openrouter": "OPENROUTER_API_KEY"}.get(args.provider)
+    if required_key and not os.environ.get(required_key):
+        raise ValueError(f"Set {required_key} securely before generation")
     output_path = Path(args.output)
+    if output_path.exists():
+        from validate_dataset import validate_file
+        if not validate_file(output_path):
+            raise ValueError("Existing output failed validation; refusing to append")
+    seen = set()
+    if output_path.exists():
+        for line in output_path.read_text().splitlines():
+            if line.strip():
+                seen.add(strict_loads(line)["conversations"][0]["value"].strip().casefold())
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     print(f"==================================================")
@@ -242,7 +259,11 @@ def run_generation(args):
         print(f"\n--> Generating {needed} examples for {spec['name']}...")
         batch_size = args.batch_size
 
+        attempts_without_progress = 0
         while needed > 0:
+            attempts_without_progress += 1
+            if attempts_without_progress > args.max_attempts:
+                raise RuntimeError(f"No progress after {args.max_attempts} attempts for {domain_key}")
             current_batch = min(batch_size, needed)
             prompt = f"{spec['prompt_instructions']}\n\nGenerate {current_batch} unique, high-quality pairs. Return each pair as one JSON line in ShareGPT format."
 
@@ -255,7 +276,7 @@ def run_generation(args):
                     base_url=args.base_url,
                 )
             except Exception as e:
-                print(f" [FAILED: {e}] Retrying in 5s...")
+                print(f" [FAILED: {type(e).__name__}] Retrying in 5s...")
                 time.sleep(5)
                 continue
 
@@ -265,11 +286,21 @@ def run_generation(args):
                 if not (line.startswith("{") and line.endswith("}")):
                     continue
                 try:
-                    record = json.loads(line)
+                    record = strict_loads(line)
                     if validate_sharegpt_record:
                         valid, msg, _ = validate_sharegpt_record(record, 0)
                         if not valid:
                             continue
+                    if len(valid_batch_lines) >= current_batch:
+                        break
+                    prompt_key = record["conversations"][0]["value"].strip().casefold()
+                    if prompt_key in seen:
+                        continue
+                    actual_domain = identify_domain(record["conversations"][0]["value"], record["conversations"][1]["value"])
+                    expected_domain = list(DOMAINS_SPEC).index(domain_key) + 1
+                    if not actual_domain.startswith(f"domain_{expected_domain}_"):
+                        continue
+                    seen.add(prompt_key)
                     valid_batch_lines.append(json.dumps(record, ensure_ascii=False))
                 except Exception:
                     continue
@@ -278,6 +309,7 @@ def run_generation(args):
                 with open(output_path, "a", encoding="utf-8") as f:
                     for vl in valid_batch_lines:
                         f.write(vl + "\n")
+                attempts_without_progress = 0
                 needed -= len(valid_batch_lines)
                 print(f" [Saved {len(valid_batch_lines)} valid pairs | Remaining: {max(0, needed)}]")
             else:
@@ -297,10 +329,14 @@ def main():
     parser.add_argument("--domain", type=str, choices=list(DOMAINS_SPEC.keys()), default=None, help="Generate for a specific domain only")
     parser.add_argument("--count", type=int, default=None, help="Override target count for selected domain")
     parser.add_argument("--batch-size", type=int, default=5, help="Number of examples per prompt call")
+    parser.add_argument("--max-attempts", type=int, default=3, help="Maximum consecutive batches without progress")
     parser.add_argument("--base-url", type=str, default=None, help="Custom base URL for OpenAI/Ollama compatible endpoints")
 
     args = parser.parse_args()
-    run_generation(args)
+    try:
+        run_generation(args)
+    except (ValueError, RuntimeError) as exc:
+        parser.exit(1, f"Error: {exc}\n")
 
 
 if __name__ == "__main__":

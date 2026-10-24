@@ -1,170 +1,75 @@
-# Rechly-DE-3B: 100% Local German Accounting AI Model 🇩🇪
+# Rechly German Accounting AI
 
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Base Model](https://img.shields.io/badge/Base%20Model-Qwen%202.5%203B%20Instruct-brightgreen.svg)](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct)
-[![Colab T4](https://img.shields.io/badge/Colab%20Training-Free%20T4%20GPU%20($0)-orange.svg)](notebooks/rechly_de_3b_training_colab.ipynb)
-[![Ollama Ready](https://img.shields.io/badge/Ollama-Ready-black.svg)](Modelfile)
+A local-first research toolkit for turning German business notes into structured accounting drafts for **[Rechly](https://rechly.de)**. It combines JSON schemas, dataset tooling, a local invoice demo, and model evaluation across five accounting tasks.
 
-**Rechly-DE-3B** is a specialized, lightweight (3 Billion parameters), privacy-first German accounting language model tailored specifically for **[Rechly](https://rechly.de)**. It operates **100% locally** on Apple Silicon (M1/M2/M3/M4) and standard CPUs, providing complete **DSGVO/GDPR compliance** with zero data leaving your hardware.
+**Status:** working CPU tooling and demo with a stored example; live inference requires Ollama and a model. No fine-tuned weights or measured model benchmark results are included. The CUDA and Apple Silicon training paths require hardware validation. This repository does not certify tax accuracy, GoBD compliance, or GDPR compliance.
 
----
+## What you can use today
 
-## ⚡ Specifications & Highlights
+- **Invoice demo:** German UI, schema-checked model output, deterministic decimal totals, JSON export, and an explicitly labeled offline example.
+- **Data pipeline:** 25 seed pairs covering invoices, line-item descriptions, tax clauses, payment reminders, and SKR03/SKR04 suggestions. Validation rejects malformed records, empty files and duplicate prompts.
+- **Generation:** OpenAI, Anthropic, OpenRouter and Ollama; bounded retries, resumable domain counts, and duplicate filtering.
+- **Experiments:** reproducible stratified train/validation/test splits with source/output SHA-256 hashes.
+- **Evaluation:** eight curated smoke cases, strict JSON schemas, selected fact checks, latency measurements and machine-readable reports. Failures produce a nonzero exit code.
+- **Engineering:** pytest regression tests and GitHub Actions for Python 3.11/3.12.
 
-| Parameter | Specification |
-| :--- | :--- |
-| **Base Architecture** | `Qwen/Qwen2.5-3B-Instruct` |
-| **Quantization** | GGUF `Q4_K_M` (~1.9 GB file size) |
-| **RAM Footprint** | **< 2.5 GB RAM** (Runs comfortably on any MacBook or 4GB VPS) |
-| **Inference Speed** | **60–80+ tokens/sec** via Ollama on Apple Silicon Metal |
-| **Fine-Tuning Method** | QLoRA (Rank 16, Alpha 32, AdamW 8-bit) with Unsloth or Apple MLX |
-| **Training Hardware** | Free Google Colab T4 GPU (~30 min, **$0 cost**) or local Mac with MLX |
-| **Compliance Standards** | German **GoBD**, **UStG** (§ 19 Kleinunternehmer, § 13b Reverse-Charge, Innergemeinschaftlich), **DATEV SKR03 / SKR04** |
-
----
-
-## 🎯 5 Core Accounting Domains
-
-```
-                                  ┌────────────────────────┐
-                                  │     Rechly-DE-3B       │
-                                  └───────────┬────────────┘
-         ┌──────────────────┬─────────────────┼────────────────┬──────────────────┐
-         ▼                  ▼                 ▼                ▼                  ▼
-┌─────────────────┐ ┌───────────────┐ ┌───────────────┐ ┌───────────────┐ ┌─────────────────┐
-│ Domain 1:       │ │ Domain 2:     │ │ Domain 3:     │ │ Domain 4:     │ │ Domain 5:       │
-│ Text-to-Invoice │ │ Line Item     │ │ GoBD / Tax    │ │ Dunning       │ │ SKR03 / SKR04   │
-│ Strict JSON     │ │ Rewriter      │ │ Clauses       │ │ Reminders     │ │ Categorization  │
-└─────────────────┘ └───────────────┘ └───────────────┘ └───────────────┘ └─────────────────┘
-```
-
-1. **Text-to-Invoice (Strict JSON Extraction)**:
-   Extracts client names, quantities, unit prices, tax rates (19%, 7%, 0%), and payment terms directly from unstructured German notes into Rechly's native schema.
-2. **B2B Line Item Description Rewriter**:
-   Converts informal, raw notes (`"website schneller gemacht und datenbank geputzt"`) into audit-proof, formal descriptions (`"Performance-Optimierung der Webpräsenz: Bereinigung und Indexierung relationaler Datenbanktabellen sowie Ladezeitreduktion"`).
-3. **German Tax & GoBD Compliance Notes**:
-   Generates legally mandated statutory clauses (§ 19 UStG Kleinunternehmer, § 13b UStG Steuerschuldnerschaft des Leistungsempfängers, § 4 Nr. 1b i.V.m. § 6a UStG innergemeinschaftliche Lieferung, § 25a UStG Differenzbesteuerung).
-4. **Mahnwesen (Dunning Letters & Reminders)**:
-   Produces multi-tiered, tone-appropriate German payment reminders (Stufe 1: Freundliche Erinnerung, Stufe 2: 1. Mahnung mit 7-Tage-Nachfrist, Stufe 3: Letzte Mahnung vor Inkasso/Mahnbescheid).
-5. **SKR03 / SKR04 Expense Categorization**:
-   Assigns DATEV-standard 4-digit accounting codes (e.g. 4650 / 6640 for Bewirtung, 4964 / 6837 for SaaS, 0480 / 0670 for GWG) along with deductibility percentages and receipt guidelines.
-
----
-
-## 📁 Repository Structure
-
-```
-rechly_llm/
-├── BLUEPRINT.md                         # Detailed design specification
-├── Modelfile                            # Ollama Modelfile with ChatML & system prompt
-├── README.md                            # Complete setup & training guide
-├── requirements.txt                     # Dependencies for dataset gen & training
-├── data/
-│   ├── seed_dataset.jsonl               # 25 verified GoBD training seed pairs
-│   └── schemas/
-│       ├── invoice_schema.json          # JSON schema for Text-to-Invoice output
-│       └── expense_schema.json          # JSON schema for SKR03/SKR04 output
-├── notebooks/
-│   └── rechly_de_3b_training_colab.ipynb# Turnkey Google Colab training notebook
-└── scripts/
-    ├── generate_dataset.py              # Multi-provider synthetic dataset generator
-    ├── validate_dataset.py              # Schema & GoBD integrity validator
-    ├── train_unsloth.py                 # QLoRA training script for CUDA / Colab
-    ├── train_mlx.py                     # Native Apple Silicon MLX training script
-    ├── export_gguf.py                   # GGUF quantization helper
-    └── evaluate_model.py                # Automated 5-domain evaluation benchmark
-```
-
----
-
-## 🚀 Quickstart Guide
-
-### 1. Installation
+## Quick start
 
 ```bash
-git clone https://github.com/rechly/rechly_llm.git
+git clone https://github.com/myaxyo/rechly_llm.git
 cd rechly_llm
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
-
-### 2. Validate Existing Seed Data
-
-Check the pre-packaged seed dataset:
-```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt -c constraints.txt
 python scripts/validate_dataset.py data/seed_dataset.jsonl
+python -m pytest -q
+python scripts/serve_demo.py
 ```
 
-### 3. Generate Large-Scale Synthetic Dataset (Optional)
+The demo binds to the loopback interface on port 8080. On your own machine, open that port in a browser. **Beispiel ansehen** works without a model and displays a stored seed record. **Entwurf erstellen** sends the entered note to the configured model endpoint. The server does not persist notes or model responses. Exported JSON is saved by your browser. This is a development demo; do not expose its unauthenticated HTTP server publicly.
 
-Generate 1,500+ diverse examples using OpenAI, Anthropic, OpenRouter, or local Ollama:
+For live generation, install [Ollama](https://ollama.com/download), start its service, and run:
+
 ```bash
-# Using OpenAI GPT-4o-mini
-export OPENAI_API_KEY="sk-..."
-python scripts/generate_dataset.py --provider openai --model gpt-4o-mini --output data/rechly_german_accounting.jsonl
-
-# Or using local Ollama (100% free)
-python scripts/generate_dataset.py --provider ollama --model qwen2.5-coder:14b --batch-size 2
+ollama pull qwen2.5:3b
+python scripts/serve_demo.py --model qwen2.5:3b
 ```
 
----
+This uses the base model, not a fine-tuned Rechly model. Model memory, speed and accuracy depend on hardware and must be measured. The demo returns HTTP 502 for invalid structured output and 503 if inference is unavailable. HTTP health success alone does not establish model readiness.
 
-## 🏋️ Training Pipelines
+## Develop and measure
 
-### Option A: Google Colab (Recommended, Free T4 GPU)
-1. Open [`notebooks/rechly_de_3b_training_colab.ipynb`](notebooks/rechly_de_3b_training_colab.ipynb) in Google Colab.
-2. Select runtime: **T4 GPU** (under `Runtime` $\to$ `Change runtime type`).
-3. Upload `rechly_german_accounting.jsonl` (or use the seed dataset).
-4. Run all cells: the model trains in ~30 minutes and exports `rechly-de-3b-q4_k_m.gguf`.
-5. Download the `.gguf` file to your machine.
-
-### Option B: Local Training on Apple Silicon (MLX)
-Fine-tune directly on your Mac using Apple's MLX framework:
 ```bash
-pip install mlx mlx-lm
-python scripts/train_mlx.py --data data/seed_dataset.jsonl --iters 200
+# Reproducible, disjoint splits (use a new output directory for each experiment)
+python scripts/prepare_dataset.py data/seed_dataset.jsonl --output data/generated/seed-v1
+
+# Optional generation through a running local model
+python scripts/generate_dataset.py --provider ollama --model qwen2.5:3b \
+  --domain text_to_invoice --count 10 --max-attempts 3 \
+  --output data/generated/invoices.jsonl
+
+# Measured base-model benchmark; failures remain failures
+python scripts/evaluate_model.py --model qwen2.5:3b --report reports/base.json
 ```
 
----
+Hosted generation uses the relevant provider environment variable (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, or `OPENROUTER_API_KEY`). Set credentials securely in your runtime; do not commit them. Hosted generation transmits prompts to that provider. The scripts read exported variables; they do not automatically load `.env` files.
 
-## 🦙 Ollama Integration
+The eight-case benchmark is a development smoke test, not evidence of general accounting correctness. Text cases use literal keyword checks and can reject valid paraphrases. Reports omit raw outputs. Read [evaluation and release criteria](docs/RELEASE.md) before making quality claims.
 
-### 1. Register the Model
-Once you have `rechly-de-3b-q4_k_m.gguf` in your folder:
-```bash
-ollama create rechly-de-3b -f Modelfile
-```
+## Train and connect to Rechly
 
-> **Pro Tip**: Want to test the prompt & system persona immediately before training? Create a prototype alias from base Qwen:
-> ```bash
-> sed 's|./rechly-de-3b-q4_k_m.gguf|qwen2.5:3b|g' Modelfile > Modelfile.dev
-> ollama create rechly-de-3b -f Modelfile.dev
-> ```
+**Apple Silicon is the primary path:** follow [the Mac quickstart](docs/MAC_QUICKSTART.md). The Mac setup uses a separate environment, checks Metal, and records training artifacts. Code ownership is confirmed; seed-data usage rights remain unresolved—see [provenance status](docs/PROVENANCE.md).
 
-### 2. Test in Terminal
-```bash
-ollama run rechly-de-3b "Rechnung an Müller GmbH: 10 Std. Beratung à 120€, zahlbar in 14 Tagen"
-```
+See [training workflow](docs/TRAINING.md), [model card](docs/MODEL_CARD.md), and [dataset card](docs/DATASET_CARD.md). Training and publishing a useful model require a larger reviewed dataset, supported hardware and independent evaluation; 25 examples are only enough to test the pipeline.
 
-### 3. Run Automated Benchmark
-```bash
-python scripts/evaluate_model.py --model rechly-de-3b
-```
+The existing `Modelfile` expects `rechly-de-3b-q4_k_m.gguf`. After a real training/export run, verify the exported path and place that artifact there before running `ollama create rechly-de-3b -f Modelfile`.
 
----
+The intended Rechly integration uses Ollama's OpenAI-compatible API on port 11434, path `/v1`. The Rechly web application source is not part of this repository, so production integration has not been tested here. Keep invoice drafts behind a human review step and use the schemas in `data/schemas/` at the integration boundary.
 
-## 🔗 Connecting to Rechly
+## Contribution and portfolio
 
-1. Open your Rechly web app and navigate to **Einstellungen $\to$ KI** (`/dashboard/settings`).
-2. Select **KI-Anbieter**: `Ollama (Lokal / DSGVO-konform)`.
-3. In the **Modell** field, select or type: `rechly-de-3b`.
-4. Ensure the **Server-URL** is `http://localhost:11434/v1`.
-5. Click **KI-Einstellungen speichern** and **KI testen**.
-6. The **Text-zu-Rechnung** prompt bar, line item optimizers, and dunning generator in Rechly will now run 100% privately and securely on your own machine!
+Read [CONTRIBUTING.md](CONTRIBUTING.md). Useful German-language contributions include anonymized edge cases, expert-reviewed tax annotations with source dates, and reproducible CPU/Apple Silicon/GPU benchmark results. The goal is a transparent, reusable German accounting-AI toolkit.
 
----
+For a CV, describe implemented engineering and link to reproducible results. For example: “Built a German accounting-AI prototype with schema-validated invoice extraction, deterministic financial calculations, reproducible dataset splits, automated tests and model evaluation.” Claim model training, accuracy improvements, production use or compliance only after documenting them.
 
-## 📜 License & Compliance
-
-Distributed under the Apache 2.0 License. All tax logic and statutory citations comply with German tax law (UStG, GoBD, EStG).
+**Licensing:** project licensing and seed-data provenance still need owner confirmation before an open-source release. Model and generated-data rights must be reviewed separately; no blanket Apache-2.0 claim is made here.
