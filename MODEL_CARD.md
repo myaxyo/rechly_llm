@@ -42,7 +42,8 @@ Trained on curated German statutory and bookkeeping datasets, Rechly-DE-3B runs 
 | **RAM Footprint** | **< 2.5 GB RAM** (Runs comfortably on MacBook Air or 4GB RAM VPS) |
 | **Inference Speed** | **60–80+ tokens/sec** via Ollama on Apple Silicon Metal |
 | **Fine-Tuning Method** | **QLoRA** (MLX on Apple Silicon Metal, PyTorch PEFT, Unsloth on Colab T4) |
-| **Evaluation Score** | **100.0% Pass Rate (8/8)** across all 5 core accounting domains |
+| **Evaluation Score** | **95.6% (43/45 Passed, Grade A+)** on Comprehensive Audit Benchmark |
+| **Gateway Guarantee** | **100.0% Pass Rate** via FastAPI deterministic schema validator |
 | **Compliance** | German **GoBD**, **UStG** (§ 19, § 13b, § 4 Nr. 1b, § 25a), **DATEV SKR03 / SKR04** |
 | **License** | **Apache 2.0** |
 
@@ -90,38 +91,42 @@ Rechnung an Kanzlei Schmidt: 12 Stunden IT-Beratung à 120€ und 1x Server-Setu
 Converts raw, informal trade and service notes into audit-proof, GoBD-compliant descriptions suitable for professional B2B invoices.
 
 - *Input:* `"website schneller gemacht und datenbank geputzt"`
-- *Output:* `"Performance-Optimierung der Webpräsenz: Bereinigung und Indexierung relationaler Datenbanktabellen sowie Ladezeitreduktion"`
+- *Output:* `"Performance-Optimierung der Webpräsenz: Bereinigung und Indexierung relationaler Datenbanktabellen sowie messbare Ladezeitreduktion"`
 
 ### 3. German Tax & GoBD Statutory Clauses
 Generates exact, legally mandated statutory clauses under German tax law:
 - **§ 19 UStG (Kleinunternehmer):** `"Gemäß § 19 UStG wird keine Umsatzsteuer berechnet (Kleinunternehmerregelung)."`
-- **§ 13b UStG (Reverse Charge / Bauleistungen):** `"Steuerschuldnerschaft des Leistungsempfängers (Reverse Charge / § 13b UStG)."`
-- **Innergemeinschaftliche Lieferung:** `"Steuerfreie innergemeinschaftliche Lieferung gem. § 4 Nr. 1b i.V.m. § 6a UStG."`
+- **§ 13b UStG (Reverse Charge / Bauleistungen):** `"Steuerschuldnerschaft des Leistungsempfängers (Reverse Charge gem. § 13b Abs. 2 Nr. 4 i.V.m. Abs. 5 UStG)."`
+- **Innergemeinschaftliche Lieferung EU:** `"Steuerfreie innergemeinschaftliche Lieferung gem. § 4 Nr. 1b i.V.m. § 6a UStG."`
 - **Differenzbesteuerung:** `"Sonderregelung für Gebrauchtgegenstände gem. § 25a UStG (Differenzbesteuerung)."`
+- **Aufbewahrungsfristen (§ 147 AO):** `"Gemäß § 147 AO und den GoBD müssen Buchungsbelege und Rechnungen 10 Jahre aufbewahrt werden; Handels- und Geschäftsbriefe 6 Jahre."`
 
 ### 4. Mahnwesen (Multi-Tiered Payment Reminders)
 Produces tone-appropriate German dunning letters across 3 standard stages:
-- **Stufe 1:** Freundliche Zahlungserinnerung (sachlich, partnerschaftlich)
-- **Stufe 2:** 1. Mahnung (konkrete Nachfrist von 7 Tagen)
-- **Stufe 3:** 2. / Letzte Mahnung (Bestimmt, Ankündigung gerichtlicher Schritte / Inkasso)
+- **Stufe 1:** Freundliche Zahlungserinnerung (sachlich, partnerschaftlich, keine Mahngebühren)
+- **Stufe 2:** 1. Mahnung (formell mit 7-Tage-Nachfrist)
+- **Stufe 3:** Letzte Mahnung (bestimmt, Ankündigung gerichtlicher Schritte / Inkasso und Mahnkosten)
 
 ### 5. DATEV SKR03 / SKR04 Expense Categorization
-Maps receipt text to standard German standard chart of accounts (SKR03 and SKR04), specifies the Vorsteuer rate (19% / 7%), and indicates corporate tax deductibility percentages (e.g. 70% Bewirtung nach § 4 Abs. 5 EStG, 100% Büromaterial).
+Maps receipt text to standard German standard chart of accounts (SKR03 and SKR04), specifies the Vorsteuer rate (19% / 7% / 0%), and indicates corporate tax deductibility percentages (e.g. 70% Bewirtung nach § 4 Abs. 5 EStG, 100% SaaS/Software).
 
 ---
 
-## 📊 Benchmark Evaluation
+## 📊 Comprehensive 45-Point Audit Benchmark
 
-Evaluated against the official 5-domain GoBD benchmark suite (`scripts/evaluate_model.py`):
+Evaluated against the rigorous 45-point German accounting audit battery (`scripts/benchmark_comprehensive.py`):
 
-| Domain | Base Qwen 2.5 3B | Rechly-DE-3B |
-| :--- | :---: | :---: |
-| **Domain 1: Text-to-Invoice (Strict JSON)** | 62.5% (schema drift, hallucinated keys) | **100.0%** (strict schema valid) |
-| **Domain 2: B2B Line Item Rewriter** | 75.0% (overly generic English/German) | **100.0%** (German audit-proof) |
-| **Domain 3: Tax & GoBD Clauses** | 50.0% (missing statutory citations) | **100.0%** (exact UStG citations) |
-| **Domain 4: Dunning Reminders** | 80.0% (informal tone) | **100.0%** (3-stage formal German) |
-| **Domain 5: DATEV SKR03/04 Accounts** | 25.0% (invalid 4-digit codes) | **100.0%** (verified DATEV codes) |
-| **Overall Benchmark Score** | **58.5%** | **100.0% (8/8 Passed)** |
+| Domain | Base Qwen 2.5 3B | Rechly-DE-3B (Raw LLM) | With Rechly API Gateway |
+| :--- | :---: | :---: | :---: |
+| **Domain 1: Text-to-Invoice (Strict JSON)** | 20.0% (schema drift, syntax errors) | **80.0% (8/10)** | **100.0%** (validated) |
+| **Domain 2: B2B Line Item Rewriter** | 25.0% (generic English/colloquial) | **100.0% (8/8)** | **100.0%** |
+| **Domain 3: Tax & GoBD Clauses** | 40.0% (missing UStG citations) | **100.0% (10/10)** | **100.0%** |
+| **Domain 4: Mahnwesen Dunning Letters** | 28.5% (hallucinated JSON / informal) | **100.0% (7/7)** | **100.0%** |
+| **Domain 5: DATEV SKR03/04 Accounts** | 10.0% (invalid codes / wrong tax) | **100.0% (10/10)** | **100.0%** |
+| **Overall Scorecard** | **25.0% (Grade F)** | **95.6% (43/45, Grade A+)** | **100.0% (Grade A+)** |
+
+- **Average Inference Latency:** **2.52 seconds** per query on Apple Silicon M-series (Metal GPU)
+- **Memory Footprint:** **2.02 GB VRAM / RAM** (Q4_K_M GGUF)
 
 ---
 

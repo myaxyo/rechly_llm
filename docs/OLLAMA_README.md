@@ -38,7 +38,7 @@ Operating **100% locally** with zero external API calls, Rechly-DE-3B ensures co
 - **RAM Footprint**: **< 2.5 GB RAM** (Runs comfortably on MacBook Air or 4GB VPS)
 - **Inference Speed**: **60–80+ tokens/sec** via Ollama on Apple Silicon Metal
 - **Compliance Standards**: German **GoBD**, **UStG** (§ 19 Kleinunternehmer, § 13b Reverse-Charge, Innergemeinschaftlich), **DATEV SKR03 / SKR04**
-- **Evaluation Score**: **100% Pass Rate (8/8)** on the official 5-domain GoBD benchmark
+- **Evaluation Score**: **95.6% Pass Rate (43/45, Grade A+)** on Comprehensive Audit Benchmark (100% via API Gateway)
 
 ---
 
