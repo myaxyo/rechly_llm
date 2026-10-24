@@ -42,9 +42,14 @@ def identify_domain(human_prompt: str, gpt_response: str) -> str:
         return "domain_1_text_to_invoice"
     if cleaned.startswith("{") and ("skr03" in cleaned or "skr04" in cleaned):
         return "domain_5_skr_expenses"
+    combined = (human_prompt + " " + gpt_response).lower()
     if any(k in human_prompt.lower() for k in ["mahnung", "zahlungserinnerung", "überfällig"]):
         return "domain_4_dunning"
-    if any(k in human_prompt.lower() for k in ["§ 19", "§ 13b", "innergemeinschaft", "steuerfrei", "ausfuhr", "ustg", "pflichtangabe", "klausel"]):
+    if any(k in combined for k in [
+        "§ 19", "§ 13b", "innergemeinschaft", "steuerfrei", "ausfuhr", "ustg",
+        "pflichtangabe", "klausel", "ustdv", "§ 147 ao", "aufbewahrungsfrist",
+        "differenzbesteuerung", "§ 25a", "§ 14 abs. 4", "§ 33", "steuerschuldnerschaft"
+    ]):
         return "domain_3_tax_compliance"
     return "domain_2_line_item_enhancement"
 

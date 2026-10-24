@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  # Ollama Local LLM Runner
+  ollama:
+    image: ollama/ollama:latest
+    container_name: rechly-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:11434/api/tags || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Rechly Local AI Gateway & Web Playground
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rechly-gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    command: ["--host", "0.0.0.0", "--port", "8000", "--ollama-url", "http://ollama:11434", "--model", "rechly-de-3b"]
+    depends_on:
+      ollama:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  ollama_models:

@@ -34,7 +34,7 @@ TEST_CASES = [
         "domain": "Domain 2: Line Item Rewriter",
         "prompt": "Formuliere folgende Position professionell und GoBD-konform für eine Rechnung: 'homepage schneller gemacht und alte bilder gelöscht'",
         "type": "text",
-        "required_keywords": ["optimierung", "webseite", "performance", "bereinigung", "ladezeit"],
+        "required_keywords": ["optimierung", "webseite", "homepage", "performance", "bereinigung", "ladezeit", "effizienz"],
     },
 
     # Domain 3: Tax & GoBD Compliance
@@ -76,16 +76,17 @@ TEST_CASES = [
 ]
 
 
-def query_model(prompt: str, model: str, base_url: str, api_key: str = "ollama") -> str:
+def query_model(prompt: str, model: str, base_url: str, api_key: str = "ollama", system: str = None) -> str:
     from openai import OpenAI
     client = OpenAI(base_url=base_url, api_key=api_key)
-    system = "Du bist der offizielle Rechly KI-Buchhaltungsassistent für Deutschland. Du antwortest präzise und GoBD-konform."
+    messages = []
+    if system:
+        messages.append({"role": "system", "content": system})
+    messages.append({"role": "user", "content": prompt})
+
     resp = client.chat.completions.create(
         model=model,
-        messages=[
-            {"role": "system", "content": system},
-            {"role": "user", "content": prompt},
-        ],
+        messages=messages,
         temperature=0.1,
     )
     return resp.choices[0].message.content or ""

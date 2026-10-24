@@ -20,6 +20,12 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
+SYSTEM_PROMPT = (
+    "Du bist der offizielle Rechly KI-Buchhaltungsassistent für Deutschland. "
+    "Du erstellst präzise, GoBD-konforme Rechnungsdaten im exakten JSON-Format und formulierst professionelle deutsche Geschäftskorrespondenz."
+)
+
+
 def prepare_mlx_data(source_path: Path, output_dir: Path, split_ratio: float = 0.9):
     output_dir.mkdir(parents=True, exist_ok=True)
     train_file = output_dir / "train.jsonl"
@@ -34,7 +40,7 @@ def prepare_mlx_data(source_path: Path, output_dir: Path, split_ratio: float = 0
                 continue
             data = json.loads(line_str)
             convs = data["conversations"]
-            messages = []
+            messages = [{"role": "system", "content": SYSTEM_PROMPT}]
             for msg in convs:
                 role = "user" if msg["from"] == "human" else "assistant"
                 messages.append({"role": role, "content": msg["value"]})
@@ -59,8 +65,13 @@ def prepare_mlx_data(source_path: Path, output_dir: Path, split_ratio: float = 0
 def run_mlx_training(args):
     source_data = Path(args.data)
     if not source_data.exists():
-        print(f"Error: Data file {source_data} not found.")
-        sys.exit(1)
+        if Path("data/rechly_german_accounting.jsonl").exists():
+            source_data = Path("data/rechly_german_accounting.jsonl")
+        elif Path("data/seed_dataset.jsonl").exists():
+            source_data = Path("data/seed_dataset.jsonl")
+        else:
+            print(f"Error: Data file {source_data} not found.")
+            sys.exit(1)
 
     mlx_data_dir = PROJECT_ROOT / "data" / "mlx_splits"
     prepare_mlx_data(source_data, mlx_data_dir)
@@ -71,7 +82,8 @@ def run_mlx_training(args):
     cmd = [
         sys.executable,
         "-m",
-        "mlx_lm.lora",
+        "mlx_lm",
+        "lora",
         "--model",
         args.model,
         "--data",
@@ -97,8 +109,28 @@ def run_mlx_training(args):
         subprocess.run(cmd, check=True)
         print("\n[SUCCESS] Apple Silicon LoRA fine-tuning completed!")
         print(f"Adapters saved to: {adapter_path}")
-        print("\nTo fuse the model and export:")
-        print(f"python -m mlx_lm.fuse --model {args.model} --adapter-path {adapter_path} --save-path rechly-de-3b-mlx")
+
+        if args.fuse:
+            save_path = PROJECT_ROOT / "rechly-de-3b-mlx"
+            print(f"\nFusing LoRA adapters into full model at {save_path}...")
+            fuse_cmd = [
+                sys.executable,
+                "-m",
+                "mlx_lm",
+                "fuse",
+                "--model",
+                args.model,
+                "--adapter-path",
+                str(adapter_path),
+                "--save-path",
+                str(save_path),
+            ]
+            subprocess.run(fuse_cmd, check=True)
+            print(f"[SUCCESS] Fused model saved to {save_path}")
+        else:
+            print("\nTo fuse the model and export:")
+            print(f"python -m mlx_lm.fuse --model {args.model} --adapter-path {adapter_path} --save-path rechly-de-3b-mlx")
+
     except subprocess.CalledProcessError as e:
         print(f"MLX training command failed: {e}")
         print("Ensure 'mlx-lm' is installed: pip install mlx mlx-lm")
@@ -109,12 +141,13 @@ def run_mlx_training(args):
 def main():
     parser = argparse.ArgumentParser(description="Apple Silicon MLX fine-tuning for Rechly-DE-3B")
     parser.add_argument("--model", type=str, default="mlx-community/Qwen2.5-3B-Instruct-4bit", help="Base model identifier on HuggingFace")
-    parser.add_argument("--data", type=str, default="data/seed_dataset.jsonl", help="Input ShareGPT JSONL file")
+    parser.add_argument("--data", type=str, default="data/rechly_german_accounting.jsonl", help="Input ShareGPT JSONL file")
     parser.add_argument("--adapter-path", type=str, default="adapters/rechly-de-3b-lora", help="Output path for LoRA adapter weights")
     parser.add_argument("--batch-size", type=int, default=2)
     parser.add_argument("--iters", type=int, default=200, help="Training iterations")
     parser.add_argument("--learning-rate", type=float, default=1e-4)
     parser.add_argument("--save-every", type=int, default=50)
+    parser.add_argument("--fuse", action="store_true", help="Automatically fuse adapters into full model upon completion")
 
     args = parser.parse_args()
     run_mlx_training(args)

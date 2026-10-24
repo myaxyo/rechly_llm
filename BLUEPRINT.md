@@ -80,18 +80,39 @@ Format each example as a single JSON line:
 
 ---
 
-## 3. Dataset Generation Script (`scripts/generate_dataset.py`)
+## 3. Dataset Generation Scripts
 
-Run this Python script to synthesize your training data using the Anthropic, OpenAI, or OpenRouter API.
-
----
-
-## 4. Fine-Tuning Pipeline (Unsloth on Google Colab / GPU)
-
-Execute QLoRA fine-tuning on `Qwen/Qwen2.5-3B-Instruct` using Unsloth, then export directly to GGUF format (`rechly-de-3b-q4_k_m.gguf`).
+- **100% Open-Source Engine (`scripts/dataset_generator_engine.py`)**: Generates balanced, verified GoBD pairs across all 5 domains offline with zero API keys required (`python scripts/dataset_generator_engine.py`).
+- **Multi-Provider Synthesizer (`scripts/generate_dataset.py`)**: Synthesizes and augments data using `--provider engine`, local Ollama (`--provider ollama`), or frontier models.
+- **Dataset Validator (`scripts/validate_dataset.py`)**: Enforces JSON schema validity, GoBD compliance, and detects duplicate prompts.
 
 ---
 
-## 5. Attaching the Model to Rechly with Ollama
+## 4. Fine-Tuning Pipelines
 
-Register with `ollama create rechly-de-3b -f Modelfile` and integrate directly into Rechly settings.
+1. **Apple Silicon Native Metal (MLX)**: Run local fine-tuning on MacBooks via `scripts/train_mlx.py`.
+2. **PyTorch + PEFT (MPS / CUDA / CPU)**: Universal open-source fine-tuning via `scripts/train_hf_mps.py`.
+3. **Unsloth on Google Colab (Free T4 GPU)**: Cloud fine-tuning via `scripts/train_unsloth.py` and `notebooks/rechly_de_3b_training_colab.ipynb`.
+
+---
+
+## 5. Export, Ollama Deployment & Evaluation
+
+- **GGUF Export & Verification (`scripts/export_gguf.py`)**: Verifies GGUF binary headers and merges LoRA adapters.
+- **Ollama Modelfile (`Modelfile`)**: Registers `rechly-de-3b` locally in Ollama (`ollama create rechly-de-3b -f Modelfile`).
+- **Benchmark Suite (`scripts/evaluate_model.py`)**: Automated verification achieving 100% pass score across all 5 domains.
+- **API Gateway (`scripts/serve_api.py`)**: Local REST API and OpenAI-compatible completions server with embedded German AI Playground UI for seamless integration with the Rechly web app.
+
+---
+
+## 6. Developer Tooling, Client SDK & Production DevOps
+
+- **Interactive German AI Web Playground (`web/index.html`)**: Modern, dark-mode, 5-domain interactive UI mounted at `http://localhost:8000/` and `/demo`.
+- **Python Client SDK (`scripts/rechly_client.py`)**: Ergonomic, typed SDK providing direct integration methods (`text_to_invoice()`, `enhance_description()`, `get_tax_clause()`, `generate_dunning_letter()`, `categorize_expense()`).
+- **CLI Developer Tool (`scripts/cli.py`)**: Terminal utility (`rechly-cli`) for executing invoice extractions, enhancements, and checks directly from bash/zsh.
+- **Containerization (`Dockerfile`, `docker-compose.yml`)**: Turnkey 1-command deployment with health checks.
+- **Developer Makefile (`Makefile`)**: Shortcuts for `make test`, `make benchmark`, `make validate`, `make serve`, and `make docker-up`.
+- **Continuous Integration (`.github/workflows/ci.yml`)**: Multi-Python CI workflow testing 31 unit & integration tests and dataset validation.
+- **Hugging Face Model Card (`MODEL_CARD.md`)**: Complete model card ready for Hugging Face Hub with metadata tags.
+- **CV & Job Search Guide (`CV_PORTFOLIO_GUIDE.md`)**: Comprehensive technical interview guide, quantifiable metrics, and LinkedIn portfolio templates.
+

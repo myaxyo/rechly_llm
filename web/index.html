@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rechly-DE-3B Playground | 100% Lokale Deutsche Buchhaltungs-KI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a0e17;
+      --card-bg: rgba(18, 24, 39, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --accent-emerald: #10b981;
+      --accent-purple: #8b5cf6;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --code-bg: #0f1422;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top right, #111a2e 0%, #0a0e17 60%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    header {
+      background: rgba(10, 14, 23, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: 1rem 2rem;
+    }
+
+    .header-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+    }
+
+    .brand-block {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .logo-badge {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);
+    }
+
+    .brand-text h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .brand-text p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.75rem;
+      padding: 0.3rem 0.75rem;
+      border-radius: 9999px;
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      font-weight: 500;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.9); }
+    }
+
+    .header-links {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .btn-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-link:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      max-width: 1400px;
+      width: 100%;
+      margin: 2rem auto;
+      padding: 0 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.75rem;
+    }
+
+    /* Hero Banner */
+    .hero-banner {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.5), rgba(15, 23, 42, 0.8));
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      backdrop-filter: blur(8px);
+    }
+
+    .hero-info h2 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .hero-info p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      max-width: 700px;
+      line-height: 1.4;
+    }
+
+    .metrics-bar {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .metric-item {
+      text-align: right;
+    }
+
+    .metric-value {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #60a5fa;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .metric-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Tabs Navigation */
+    .tabs-nav {
+      display: flex;
+      gap: 0.5rem;
+      background: rgba(18, 24, 39, 0.6);
+      padding: 0.4rem;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.65rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .tab-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .tab-btn.active {
+      color: #fff;
+      background: var(--primary);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
+    }
+
+    /* Grid Layout */
+    .playground-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 1.75rem;
+      flex: 1;
+    }
+
+    @media (max-width: 1024px) {
+      .playground-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .glass-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .tag-badge {
+      font-size: 0.72rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Forms & Inputs */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .form-label {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    textarea, input, select {
+      background: var(--code-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      color: var(--text-main);
+      font-size: 0.9rem;
+      font-family: inherit;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    textarea:focus, input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 120px;
+      line-height: 1.5;
+    }
+
+    /* Samples / Presets */
+    .sample-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+    }
+
+    .chip-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      border-radius: 9999px;
+      padding: 0.35rem 0.8rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .chip-btn:hover {
+      background: rgba(59, 130, 246, 0.15);
+      border-color: rgba(59, 130, 246, 0.4);
+      color: #93c5fd;
+    }
+
+    .btn-submit {
+      background: linear-gradient(135deg, var(--primary), var(--accent-purple));
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 0.85rem 1.5rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      transition: transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Output Viewers */
+    .output-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      position: relative;
+    }
+
+    .code-box {
+      background: var(--code-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: #a5f3fc;
+      overflow: auto;
+      max-height: 440px;
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
+
+    .visual-preview {
+      background: rgba(30, 41, 59, 0.4);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .invoice-card {
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .invoice-header-row {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 0.6rem;
+    }
+
+    .inv-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+
+    .inv-table th, .inv-table td {
+      padding: 0.45rem 0.6rem;
+      text-align: left;
+    }
+
+    .inv-table th {
+      color: var(--text-muted);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-weight: 500;
+    }
+
+    .inv-table td.num, .inv-table th.num {
+      text-align: right;
+    }
+
+    .total-badge {
+      align-self: flex-end;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #34d399;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .clause-box {
+      border-left: 3px solid var(--accent-emerald);
+      background: rgba(16, 185, 129, 0.08);
+      padding: 1rem;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .dunning-box {
+      border-left: 3px solid var(--accent-amber);
+      background: rgba(245, 158, 11, 0.08);
+      padding: 1.25rem;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .skr-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.85rem;
+    }
+
+    .skr-tile {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 0.85rem;
+    }
+
+    .skr-tile-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #60a5fa;
+    }
+
+    .skr-tile-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .progress-bar-bg {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 9999px;
+      height: 8px;
+      overflow: hidden;
+      margin-top: 0.35rem;
+    }
+
+    .progress-bar-fill {
+      background: linear-gradient(90deg, #10b981, #3b82f6);
+      height: 100%;
+      transition: width 0.4s ease;
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    footer {
+      border-top: 1px solid var(--card-border);
+      padding: 1.5rem 2rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      background: rgba(10, 14, 23, 0.95);
+      margin-top: auto;
+    }
+
+    .footer-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-container">
+      <div class="brand-block">
+        <div class="logo-badge">R</div>
+        <div class="brand-text">
+          <h1>Rechly-DE-3B <span class="status-badge" id="statusBadge"><span class="status-dot"></span> 100% DSGVO Lokal</span></h1>
+          <p>Spezialisiertes deutsches KI-Modell für GoBD, UStG &amp; DATEV SKR</p>
+        </div>
+      </div>
+      <div class="header-links">
+        <a href="/docs" target="_blank" class="btn-link">⚡ OpenAPI Docs</a>
+        <a href="https://github.com/rechly/rechly_llm" target="_blank" class="btn-link">🐙 GitHub Repo</a>
+        <a href="https://rechly.de" target="_blank" class="btn-link" style="color:#60a5fa; font-weight:600;">rechly.de ↗</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main App -->
+  <main>
+    <!-- Hero / Status Banner -->
+    <div class="hero-banner">
+      <div class="hero-info">
+        <h2>🇩🇪 Rechly AI Playground &amp; Gateway</h2>
+        <p>
+          Führt GoBD-konforme Rechnungs-Extraktionen, B2B-Positionstext-Optimierungen, UStG-Pflichtklauseln, Mahnwesen und DATEV SKR03/SKR04-Kategorisierungen <strong>100% lokal auf Ihrem Rechner</strong> aus. Keine Cloud, kein Datenabfluss.
+        </p>
+      </div>
+      <div class="metrics-bar">
+        <div class="metric-item">
+          <div class="metric-value">Qwen 2.5 3B</div>
+          <div class="metric-label">Basis-Architektur</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-value">Q4_K_M GGUF</div>
+          <div class="metric-label">Quantisierung (1.8 GB)</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-value">100.0% Pass</div>
+          <div class="metric-label">5-Domain Benchmark</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-value" id="latencyDisplay">~1.8s</div>
+          <div class="metric-label">Latenz (Apple Silicon)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div class="tabs-nav">
+      <button class="tab-btn active" onclick="switchTab('tab-invoice')">
+        <span>📄</span> 1. Text-zu-Rechnung
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-item')">
+        <span>✍️</span> 2. B2B Positionstexte
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-tax')">
+        <span>⚖️</span> 3. Steuer- &amp; GoBD-Klauseln
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-dunning')">
+        <span>📬</span> 4. Mahnwesen
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-skr')">
+        <span>📊</span> 5. DATEV SKR03 / SKR04
+      </button>
+    </div>
+
+    <!-- TAB 1: Text to Invoice -->
+    <div id="tab-invoice" class="playground-grid tab-content">
+      <div class="glass-card">
+        <div class="card-header">
+          <h3 class="card-title"><span>📄</span> Natürliche Eingabe $\to$ Rechnungs-JSON</h3>
+          <span class="tag-badge">POST /api/text-to-invoice</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Umgangssprachliche Beschreibung der Rechnung:</label>
+          <textarea id="invoicePrompt" placeholder="z.B. Rechnung an Kanzlei Schmidt: 12 Stunden IT-Beratung à 120€ und 1x Setup Pauschal 250€, zahlbar in 14 Tagen."></textarea>
+        </div>
+        <div class="sample-chips">
+          <button class="chip-btn" onclick="setInvoicePreset(1)">💼 IT-Beratung &amp; Setup</button>
+          <button class="chip-btn" onclick="setInvoicePreset(2)">🛠️ Handwerker Kleinunternehmer</button>
+          <button class="chip-btn" onclick="setInvoicePreset(3)">🌐 Webagentur &amp; SSL</button>
+        </div>
+        <button id="btnInvoice" class="btn-submit" onclick="runTextToInvoice()">
+          <span>Generieren</span> ➔
+        </button>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-header">
+          <h3 class="card-title"><span>✨</span> GoBD-Ergebnis &amp; Vorschau</h3>
+          <span class="tag-badge" id="invStatus">Bereit</span>
+        </div>
+        <div class="output-container">
+          <div id="invoiceVisualPreview" class="visual-preview" style="display:none;">
+            <div class="invoice-card">
+              <div class="invoice-header-row">
+                <div>
+                  <div style="font-size:0.75rem; color:var(--text-muted);">Empfänger</div>
+                  <strong id="previewClient">-</strong>
+                </div>
+                <div style="text-align:right;">
+                  <div style="font-size:0.75rem; color:var(--text-muted);">Zahlungsziel</div>
+                  <strong id="previewDue">-</strong>
+                </div>
+              </div>
+              <table class="inv-table">
+                <thead>
+                  <tr>
+                    <th>Position</th>
+                    <th class="num">Menge</th>
+                    <th class="num">Einheit</th>
+                    <th class="num">Einzelpreis</th>
+                    <th class="num">USt.</th>
+                  </tr>
+                </thead>
+                <tbody id="previewItemsBody"></tbody>
+              </table>
+              <div class="total-badge" id="previewTotal">0,00 €</div>
+            </div>
+          </div>
+          <pre id="invoiceJsonOutput" class="code-box">// Klicken Sie auf 'Generieren' oder ein Preset links.</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: Line Item Rewriter -->
+    <div id="tab-item" class="playground-grid tab-content" style="display:none;">
+      <div class="glass-card">
+        <div class="card-header">
+          <h3 class="card-title"><span>✍️</span> B2B Positionstext-Optimierer</h3>
+          <span class="tag-badge">POST /api/enhance-description</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Umgangssprachliche Notiz oder Stichpunkte:</label>
+          <textarea id="rawItemNote" placeholder="z.B. website schneller gemacht und datenbank geputzt"></textarea>
+        </div>
+        <div class="sample-chips">
+          <button class="chip-btn" onclick="setItemPreset(1)">💻 Web &amp; DB Tuning</button>
+          <button class="chip-btn" onclick="setItemPreset(2)">🎨 Grafikdesign / Logo</button>
+          <button class="chip-btn" onclick="setItemPreset(3)">🔧 Elektroinstallation</button>
+        </div>
+        <button id="btnItem" class="btn-submit" onclick="runEnhanceDescription()">
+          <span>GoBD-konform formulieren</span> ➔
+        </button>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-header">
+          <h3 class="card-title"><span>💎</span> Professionelle Formulierung</h3>
+          <span class="tag-badge" id="itemStatus">Bereit</span>
+        </div>
+        <div class="output-container">
+          <div class="visual-preview">
+            <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase;">Vorher (Rohe Notiz):</div>
+            <div id="itemBeforeNote" style="color:var(--text-muted); font-style:italic;">-</div>
+            <div style="font-size:0.75rem; color:#60a5fa; text-transform:uppercase; margin-top:0.5rem;">Nachher (Audit-sicher):</div>
+            <div id="itemAfterNote" class="clause-box" style="border-left-color:#3b82f6; background:rgba(59,130,246,0.08); font-weight:500;">
+              Noch keine Optimierung durchgeführt.
+            </div>
+          </div>
+          <pre id="itemRawOutput" class="code-box">// JSON API Response</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: Tax Clauses -->
+    <div id="tab-tax" class="playground-grid tab-content" style="display:none;">
+      <div class="glass-card">
+        <div class="card-header">
+          <h3 class="card-title"><span>⚖️</span> Gesetzliche Pflichttexte (§ UStG / GoBD)</h3>
+          <span class="tag-badge">POST /api/tax-clause</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Steuerlicher Sachverhalt:</label>
+          <input type="text" id="taxScenario" value="Kleinunternehmerregelung" />
+        </div>
+        <div class="sample-chips">
+          <button class="chip-btn" onclick="setTaxPreset('§ 19 UStG Kleinunternehmer')">§ 19 Kleinunternehmer</button>
+          <button class="chip-btn" onclick="setTaxPreset('§ 13b UStG Handwerker Bauleistung (Reverse Charge)')">§ 13b Reverse Charge</button>
+          <button class="chip-btn" onclick="setTaxPreset('Steuerfreie innergemeinschaftliche Lieferung an Firma in Österreich')">EU-Lieferung B2B</button>
+          <button class="chip-btn" onclick="setTaxPreset('§ 25a UStG Differenzbesteuerung Gebrauchtwaren')">§ 25a Differenzbesteuerung</button>
+          <button class="chip-btn" onclick="setTaxPreset('Kleinbetragsrechnung bis 250 Euro gemäss § 33 UStDV')">§ 33 UStDV Kleinbetrag</button>
+        </div>
+        <button id="btnTax" class="btn-submit" onclick="runTaxClause()">
+          <span>Pflichtklausel abrufen</span> ➔
+        </button>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-header">
+          <h3 class="card-title"><span>📜</span> Rechtskonformer Klausel-Text</h3>
+          <span class="tag-badge" id="taxStatus">Bereit</span>
+        </div>
+        <div class="output-container">
+          <div class="visual-preview">
+            <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase;">Sachverhalt:</div>
+            <strong id="taxScenarioDisplay">-</strong>
+            <div style="font-size:0.75rem; color:#34d399; text-transform:uppercase; margin-top:0.5rem;">Offizieller Vermerk für Rechnung:</div>
+            <div id="taxClauseDisplay" class="clause-box">Wählen Sie links ein Szenario aus.</div>
+          </div>
+          <pre id="taxRawOutput" class="code-box">// JSON API Response</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: Dunning -->
+    <div id="tab-dunning" class="playground-grid tab-content" style="display:none;">
+      <div class="glass-card">
+        <div class="card-header">
+          <h3 class="card-title"><span>📬</span> Mahnwesen &amp; Zahlungserinnerungen</h3>
+          <span class="tag-badge">POST /api/dunning-letter</span>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+          <div class="form-group">
+            <label class="form-label">Rechnungsnummer:</label>
+            <input type="text" id="dunnNr" value="RE-2026-0841" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Kunde / Firma:</label>
+            <input type="text" id="dunnClient" value="Kreativstudio Alpha GmbH" />
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+          <div class="form-group">
+            <label class="form-label">Betrag (€):</label>
+            <input type="number" id="dunnAmount" value="2850.00" step="10" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Überfällig seit (Tagen):</label>
+            <input type="number" id="dunnDays" value="14" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mahnstufe:</label>
+          <select id="dunnStage">
+            <option value="1">Stufe 1: Freundliche Zahlungserinnerung</option>
+            <option value="2">Stufe 2: 1. Mahnung (7 Tage Nachfrist)</option>
+            <option value="3">Stufe 3: Letzte Mahnung (vor gerichtlichen Schritten)</option>
+          </select>
+        </div>
+        <button id="btnDunning" class="btn-submit" onclick="runDunning()">
+          <span>Mahnschreiben formulieren</span> ➔
+        </button>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-header">
+          <h3 class="card-title"><span>✉️</span> Generiertes Mahnschreiben</h3>
+          <span class="tag-badge" id="dunnStatus">Bereit</span>
+        </div>
+        <div class="output-container">
+          <div id="dunningLetterBox" class="dunning-box">Klicken Sie links auf 'Mahnschreiben formulieren'.</div>
+          <pre id="dunningRawOutput" class="code-box" style="max-height:180px;">// JSON API Response</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: SKR Expenses -->
+    <div id="tab-skr" class="playground-grid tab-content" style="display:none;">
+      <div class="glass-card">
+        <div class="card-header">
+          <h3 class="card-title"><span>📊</span> DATEV SKR03 / SKR04 Kontierung</h3>
+          <span class="tag-badge">POST /api/categorize-expense</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Belegtext oder Ausgabe:</label>
+          <textarea id="expensePrompt" placeholder="z.B. Geschäftsessen mit Neukunde im Restaurant Osteria 140€"></textarea>
+        </div>
+        <div class="sample-chips">
+          <button class="chip-btn" onclick="setExpensePreset(1)">🍽️ Geschäftsessen (Bewirtung 70%)</button>
+          <button class="chip-btn" onclick="setExpensePreset(2)">☁️ SaaS Monatsabo (Google / AWS)</button>
+          <button class="chip-btn" onclick="setExpensePreset(3)">💻 Arbeitslaptop 750€ (GWG)</button>
+          <button class="chip-btn" onclick="setExpensePreset(4)">🚆 Bahnticket Dienstreise</button>
+        </div>
+        <button id="btnExpense" class="btn-submit" onclick="runExpense()">
+          <span>DATEV Konten bestimmen</span> ➔
+        </button>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-header">
+          <h3 class="card-title"><span>🏷️</span> Kontierungs-Ergebnis</h3>
+          <span class="tag-badge" id="expenseStatus">Bereit</span>
+        </div>
+        <div class="output-container">
+          <div class="visual-preview">
+            <div class="skr-grid">
+              <div class="skr-tile">
+                <div class="skr-tile-label">DATEV SKR03</div>
+                <div class="skr-tile-num" id="skr03Account">-</div>
+              </div>
+              <div class="skr-tile">
+                <div class="skr-tile-label">DATEV SKR04</div>
+                <div class="skr-tile-num" id="skr04Account">-</div>
+              </div>
+              <div class="skr-tile">
+                <div class="skr-tile-label">Kategorie</div>
+                <div style="font-weight:600; font-size:1.1rem; color:#f3f4f6;" id="skrCategory">-</div>
+              </div>
+              <div class="skr-tile">
+                <div class="skr-tile-label">Vorsteuersatz</div>
+                <div style="font-weight:600; font-size:1.1rem; color:#34d399;" id="skrVat">-</div>
+              </div>
+            </div>
+            <div style="margin-top:0.5rem;">
+              <div style="display:flex; justify-content:space-between; font-size:0.75rem;">
+                <span class="text-muted">Steuerliche Abzugsfähigkeit:</span>
+                <strong id="skrDeductibleLabel">-</strong>
+              </div>
+              <div class="progress-bar-bg">
+                <div id="skrDeductibleBar" class="progress-bar-fill" style="width:0%;"></div>
+              </div>
+            </div>
+            <div id="skrNote" class="clause-box" style="margin-top:0.5rem;">-</div>
+          </div>
+          <pre id="expenseRawOutput" class="code-box">// JSON API Response</pre>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-container">
+      <div>
+        <strong>Rechly-DE-3B</strong> &bull; Apache 2.0 Open Source Model for <a href="https://rechly.de" target="_blank" style="color:#60a5fa; text-decoration:none;">Rechly.de</a>
+      </div>
+      <div>
+        100% DSGVO &amp; GoBD-konform &bull; Runs offline via Ollama &amp; MLX
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Tab Switching
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(tabId).style.display = 'grid';
+      event.currentTarget.classList.add('active');
+    }
+
+    // Presets
+    function setInvoicePreset(idx) {
+      const presets = {
+        1: "Rechnung an Kanzlei Schmidt & Partner: 12 Stunden IT-Beratung à 120€ und 1x Server-Setup Pauschal 250€, zahlbar in 14 Tagen.",
+        2: "Rechnung an Blumenladen Rose: 5 Stunden Schaufensterdekoration à 55€, Kleinunternehmerregelung ohne USt., zahlbar innerhalb von 7 Tagen.",
+        3: "Rechnung an WebTech GmbH: 14 Stunden Frontend-Entwicklung à 95€ und 1x SSL Zertifikat Pauschal 60€, zahlbar in 14 Tagen mit 2% Skonto."
+      };
+      document.getElementById('invoicePrompt').value = presets[idx] || '';
+    }
+
+    function setItemPreset(idx) {
+      const presets = {
+        1: "website schneller gemacht und datenbank geputzt",
+        2: "neues Firmenlogo und Visitenkarten layouten für Chef",
+        3: "Sicherungskasten ausgetauscht und FI-Schutzschalter neu verkabelt"
+      };
+      document.getElementById('rawItemNote').value = presets[idx] || '';
+    }
+
+    function setTaxPreset(val) {
+      document.getElementById('taxScenario').value = val;
+    }
+
+    function setExpensePreset(idx) {
+      const presets = {
+        1: "Geschäftsessen mit Neukunden im Restaurant Osteria 180€ inkl. 19% MwSt.",
+        2: "Monatliche Rechnung für Google Workspace Cloud Dienste 72€ Netto",
+        3: "Neuer Monitor Dell UltraSharp 450€ für Home Office Büro",
+        4: "DB Fernverkehr Bahnticket 2. Klasse nach Frankfurt zum Kundentermin 129€"
+      };
+      document.getElementById('expensePrompt').value = presets[idx] || '';
+    }
+
+    // API Callers
+    async function runTextToInvoice() {
+      const prompt = document.getElementById('invoicePrompt').value.trim();
+      if (!prompt) return;
+      const btn = document.getElementById('btnInvoice');
+      const status = document.getElementById('invStatus');
+      const jsonOut = document.getElementById('invoiceJsonOutput');
+      const visual = document.getElementById('invoiceVisualPreview');
+      
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Generiere...';
+      status.innerText = 'Verarbeite...';
+
+      const t0 = performance.now();
+      try {
+        const res = await fetch('/api/text-to-invoice', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({prompt})
+        });
+        const data = await res.json();
+        const duration = ((performance.now() - t0) / 1000).toFixed(2);
+        document.getElementById('latencyDisplay').innerText = `${duration}s`;
+
+        jsonOut.innerText = JSON.stringify(data, null, 2);
+        status.innerText = `Erfolgreich (${duration}s)`;
+
+        // Render preview
+        document.getElementById('previewClient').innerText = data.client_name || '-';
+        document.getElementById('previewDue').innerText = data.due_days ? `${data.due_days} Tage` : (data.payment_terms || '-');
+        const tbody = document.getElementById('previewItemsBody');
+        tbody.innerHTML = '';
+        let total = 0;
+        if (Array.isArray(data.items)) {
+          data.items.forEach(it => {
+            const sum = (it.quantity || 1) * (it.price || 0);
+            total += sum;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${it.description || ''}</td>
+              <td class="num">${it.quantity || 1}</td>
+              <td class="num">${it.unit_of_measure || 'Stk.'}</td>
+              <td class="num">${(it.price || 0).toFixed(2)} €</td>
+              <td class="num">${it.tax_rate_percent || 19}%</td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }
+        document.getElementById('previewTotal').innerText = `${total.toFixed(2)} € (Netto)`;
+        visual.style.display = 'block';
+
+      } catch (e) {
+        jsonOut.innerText = `Fehler: ${e.message}`;
+        status.innerText = 'Fehlgeschlagen';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Generieren</span> ➔';
+      }
+    }
+
+    async function runEnhanceDescription() {
+      const raw_note = document.getElementById('rawItemNote').value.trim();
+      if (!raw_note) return;
+      const btn = document.getElementById('btnItem');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Optimiere...';
+
+      try {
+        const res = await fetch('/api/enhance-description', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({raw_note})
+        });
+        const data = await res.json();
+        document.getElementById('itemBeforeNote').innerText = data.original;
+        document.getElementById('itemAfterNote').innerText = data.enhanced_description;
+        document.getElementById('itemRawOutput').innerText = JSON.stringify(data, null, 2);
+      } catch (e) {
+        document.getElementById('itemAfterNote').innerText = `Fehler: ${e.message}`;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>GoBD-konform formulieren</span> ➔';
+      }
+    }
+
+    async function runTaxClause() {
+      const scenario = document.getElementById('taxScenario').value.trim();
+      if (!scenario) return;
+      const btn = document.getElementById('btnTax');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Suche Klausel...';
+
+      try {
+        const res = await fetch('/api/tax-clause', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({scenario})
+        });
+        const data = await res.json();
+        document.getElementById('taxScenarioDisplay').innerText = data.scenario;
+        document.getElementById('taxClauseDisplay').innerText = data.statutory_clause;
+        document.getElementById('taxRawOutput').innerText = JSON.stringify(data, null, 2);
+      } catch (e) {
+        document.getElementById('taxClauseDisplay').innerText = `Fehler: ${e.message}`;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Pflichtklausel abrufen</span> ➔';
+      }
+    }
+
+    async function runDunning() {
+      const btn = document.getElementById('btnDunning');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Erstelle Mahnung...';
+
+      const payload = {
+        invoice_number: document.getElementById('dunnNr').value,
+        client_name: document.getElementById('dunnClient').value,
+        amount: parseFloat(document.getElementById('dunnAmount').value),
+        overdue_days: parseInt(document.getElementById('dunnDays').value),
+        stage: parseInt(document.getElementById('dunnStage').value)
+      };
+
+      try {
+        const res = await fetch('/api/dunning-letter', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        document.getElementById('dunningLetterBox').innerText = data.letter_text;
+        document.getElementById('dunningRawOutput').innerText = JSON.stringify(data, null, 2);
+      } catch (e) {
+        document.getElementById('dunningLetterBox').innerText = `Fehler: ${e.message}`;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Mahnschreiben formulieren</span> ➔';
+      }
+    }
+
+    async function runExpense() {
+      const receipt_text = document.getElementById('expensePrompt').value.trim();
+      if (!receipt_text) return;
+      const btn = document.getElementById('btnExpense');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Bestimme Konten...';
+
+      try {
+        const res = await fetch('/api/categorize-expense', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({receipt_text})
+        });
+        const data = await res.json();
+        document.getElementById('skr03Account').innerText = data.skr03_account || '-';
+        document.getElementById('skr04Account').innerText = data.skr04_account || '-';
+        document.getElementById('skrCategory').innerText = data.category || '-';
+        document.getElementById('skrVat').innerText = `${data.vat_rate || 0}%`;
+        const pct = data.deductible_percent || 0;
+        document.getElementById('skrDeductibleLabel').innerText = `${pct}% steuerlich abzugsfähig`;
+        document.getElementById('skrDeductibleBar').style.width = `${pct}%`;
+        document.getElementById('skrNote').innerText = data.note || '-';
+        document.getElementById('expenseRawOutput').innerText = JSON.stringify(data, null, 2);
+      } catch (e) {
+        document.getElementById('skrNote').innerText = `Fehler: ${e.message}`;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>DATEV Konten bestimmen</span> ➔';
+      }
+    }
+
+    // Health check on load
+    window.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const r = await fetch('/health');
+        const data = await r.json();
+        if (!data.ollama_connected) {
+          const badge = document.getElementById('statusBadge');
+          badge.style.background = 'rgba(239, 68, 68, 0.15)';
+          badge.style.color = '#f87171';
+          badge.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+          badge.innerHTML = '⚠️ Ollama nicht verbunden';
+        }
+      } catch (e) {}
+      // Load first preset by default
+      setInvoicePreset(1);
+    });
+  </script>
+</body>
+</html>

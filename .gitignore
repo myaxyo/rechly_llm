@@ -33,13 +33,17 @@ ENV/
 rechly_model_outputs/
 runs/
 lora_model/
+adapters/
+rechly-de-3b-mlx/
 rechly-de-3b/
 *.gguf
 *.bin
 *.safetensors
+.pytest_cache/
 
 # Local dataset exports and cache
 data/generated/
+data/mlx_splits/
 *.tmp
 .cache/
 

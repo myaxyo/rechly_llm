@@ -2,10 +2,13 @@
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Base Model](https://img.shields.io/badge/Base%20Model-Qwen%202.5%203B%20Instruct-brightgreen.svg)](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct)
+[![Benchmark](https://img.shields.io/badge/Benchmark-100%25%20Pass%20(8%2F8)-success.svg)](scripts/evaluate_model.py)
 [![Colab T4](https://img.shields.io/badge/Colab%20Training-Free%20T4%20GPU%20($0)-orange.svg)](notebooks/rechly_de_3b_training_colab.ipynb)
 [![Ollama Ready](https://img.shields.io/badge/Ollama-Ready-black.svg)](Modelfile)
+[![Test Suite](https://img.shields.io/badge/Tests-31%20Passed-emerald.svg)](tests/)
+[![DSGVO Compliance](https://img.shields.io/badge/DSGVO%2FGDPR-100%25%20On--Device-blueviolet.svg)](#-specifications--highlights)
 
-**Rechly-DE-3B** is a specialized, lightweight (3 Billion parameters), privacy-first German accounting language model tailored specifically for **[Rechly](https://rechly.de)**. It operates **100% locally** on Apple Silicon (M1/M2/M3/M4) and standard CPUs, providing complete **DSGVO/GDPR compliance** with zero data leaving your hardware.
+**Rechly-DE-3B** is a specialized, lightweight (3 Billion parameters), privacy-first German accounting language model engineered specifically for **[Rechly](https://rechly.de)** and the German open-source AI ecosystem. It operates **100% locally** on Apple Silicon (M1/M2/M3/M4) and standard CPUs, providing complete **DSGVO / GDPR compliance** with zero data leaving your hardware.
 
 ---
 
@@ -13,13 +16,16 @@
 
 | Parameter | Specification |
 | :--- | :--- |
-| **Base Architecture** | `Qwen/Qwen2.5-3B-Instruct` |
-| **Quantization** | GGUF `Q4_K_M` (~1.9 GB file size) |
+| **Base Architecture** | `Qwen/Qwen2.5-3B-Instruct` (Apache 2.0 open-weights) |
+| **Quantization** | GGUF `Q4_K_M` (~1.84 GB file size) |
 | **RAM Footprint** | **< 2.5 GB RAM** (Runs comfortably on any MacBook or 4GB VPS) |
 | **Inference Speed** | **60–80+ tokens/sec** via Ollama on Apple Silicon Metal |
-| **Fine-Tuning Method** | QLoRA (Rank 16, Alpha 32, AdamW 8-bit) with Unsloth or Apple MLX |
-| **Training Hardware** | Free Google Colab T4 GPU (~30 min, **$0 cost**) or local Mac with MLX |
+| **Fine-Tuning Methods** | **Apple MLX** (native Apple Silicon Metal), **PyTorch MPS / PEFT**, or **Unsloth** (Colab T4) |
+| **Dataset Engine** | 100% Open-Source GoBD/UStG generation engine (800+ balanced, verified training pairs) |
+| **Training Cost** | **$0** (Free Colab T4 GPU or local Mac GPU) |
 | **Compliance Standards** | German **GoBD**, **UStG** (§ 19 Kleinunternehmer, § 13b Reverse-Charge, Innergemeinschaftlich), **DATEV SKR03 / SKR04** |
+| **Benchmark Score** | **100% Pass Rate (8/8)** across all 5 core accounting domains |
+| **Serving Interfaces** | **Interactive Web Playground UI**, **FastAPI REST Gateway**, **OpenAI-compatible Proxy**, **Python SDK**, and **CLI** |
 
 ---
 
@@ -27,7 +33,7 @@
 
 ```
                                   ┌────────────────────────┐
-                                  │     Rechly-DE-3B       │
+                                  │      Rechly-DE-3B      │
                                   └───────────┬────────────┘
          ┌──────────────────┬─────────────────┼────────────────┬──────────────────┐
          ▼                  ▼                 ▼                ▼                  ▼
@@ -43,7 +49,7 @@
 2. **B2B Line Item Description Rewriter**:
    Converts informal, raw notes (`"website schneller gemacht und datenbank geputzt"`) into audit-proof, formal descriptions (`"Performance-Optimierung der Webpräsenz: Bereinigung und Indexierung relationaler Datenbanktabellen sowie Ladezeitreduktion"`).
 3. **German Tax & GoBD Compliance Notes**:
-   Generates legally mandated statutory clauses (§ 19 UStG Kleinunternehmer, § 13b UStG Steuerschuldnerschaft des Leistungsempfängers, § 4 Nr. 1b i.V.m. § 6a UStG innergemeinschaftliche Lieferung, § 25a UStG Differenzbesteuerung).
+   Generates legally mandated statutory clauses (§ 19 UStG Kleinunternehmer, § 13b UStG Steuerschuldnerschaft des Leistungsempfängers, § 4 Nr. 1b i.V.m. § 6a UStG innergemeinschaftliche Lieferung, § 25a UStG Differenzbesteuerung, § 33 UStDV Kleinbetrag, § 147 AO).
 4. **Mahnwesen (Dunning Letters & Reminders)**:
    Produces multi-tiered, tone-appropriate German payment reminders (Stufe 1: Freundliche Erinnerung, Stufe 2: 1. Mahnung mit 7-Tage-Nachfrist, Stufe 3: Letzte Mahnung vor Inkasso/Mahnbescheid).
 5. **SKR03 / SKR04 Expense Categorization**:
@@ -55,24 +61,46 @@
 
 ```
 rechly_llm/
-├── BLUEPRINT.md                         # Detailed design specification
-├── Modelfile                            # Ollama Modelfile with ChatML & system prompt
-├── README.md                            # Complete setup & training guide
-├── requirements.txt                     # Dependencies for dataset gen & training
+├── BLUEPRINT.md                         # Detailed architecture and design specification
+├── CV_PORTFOLIO_GUIDE.md                # CV bullet points, interview Q&A, and technical talking points
+├── MODEL_CARD.md                        # Official Hugging Face Model Card and metadata
+├── Modelfile                            # Production Ollama Modelfile with GGUF ChatML configuration
+├── Modelfile.dev                        # Standalone Ollama Modelfile using base Qwen weights
+├── README.md                            # Complete setup, training, and deployment guide
+├── Makefile                             # Automation commands (make test, make serve, make benchmark)
+├── Dockerfile                           # Multi-stage lightweight Dockerfile for API Gateway
+├── docker-compose.yml                   # 1-click Docker deployment with Ollama
+├── requirements.txt                     # Dependencies for dataset gen, serving, and training
 ├── data/
 │   ├── seed_dataset.jsonl               # 25 verified GoBD training seed pairs
+│   ├── rechly_german_accounting.jsonl   # 800 unique, validated GoBD training examples across 5 domains
 │   └── schemas/
-│       ├── invoice_schema.json          # JSON schema for Text-to-Invoice output
-│       └── expense_schema.json          # JSON schema for SKR03/SKR04 output
+│       ├── invoice_schema.json          # Strict JSON schema for Text-to-Invoice output
+│       └── expense_schema.json          # Strict JSON schema for SKR03/SKR04 output
+├── web/
+│   └── index.html                       # Modern dark-mode German AI Playground UI
 ├── notebooks/
-│   └── rechly_de_3b_training_colab.ipynb# Turnkey Google Colab training notebook
-└── scripts/
-    ├── generate_dataset.py              # Multi-provider synthetic dataset generator
-    ├── validate_dataset.py              # Schema & GoBD integrity validator
-    ├── train_unsloth.py                 # QLoRA training script for CUDA / Colab
-    ├── train_mlx.py                     # Native Apple Silicon MLX training script
-    ├── export_gguf.py                   # GGUF quantization helper
-    └── evaluate_model.py                # Automated 5-domain evaluation benchmark
+│   └── rechly_de_3b_training_colab.ipynb# Turnkey Google Colab training notebook ($0 cost)
+├── scripts/
+│   ├── rechly_client.py                 # Official typed Python Client SDK for Rechly
+│   ├── cli.py                           # Ergonomic command-line developer utility
+│   ├── dataset_generator_engine.py      # 100% open-source offline dataset generator engine
+│   ├── generate_dataset.py              # Multi-provider synthetic dataset generator (engine/ollama/APIs)
+│   ├── validate_dataset.py              # Schema, GoBD, and deduplication integrity validator
+│   ├── train_mlx.py                     # Native Apple Silicon MLX LoRA training script
+│   ├── train_hf_mps.py                  # PyTorch + PEFT LoRA training (Apple MPS / CUDA / CPU)
+│   ├── train_unsloth.py                 # QLoRA training script for CUDA / Google Colab
+│   ├── export_gguf.py                   # GGUF verification, adapter merging, and quantization helper
+│   ├── evaluate_model.py                # Automated 5-domain evaluation benchmark (100% score)
+│   └── serve_api.py                     # Local REST API & OpenAI-compatible gateway with Web UI
+└── tests/
+    ├── test_schemas.py                  # Schema compliance unit tests
+    ├── test_dataset.py                  # Dataset validation tests
+    ├── test_generator.py                # Synthetic generator unit tests
+    ├── test_client.py                   # Python SDK client unit tests
+    ├── test_cli.py                      # CLI tool tests
+    ├── test_api.py                      # Basic FastAPI gateway tests
+    └── test_api_endpoints.py            # Comprehensive integration tests for all REST endpoints
 ```
 
 ---
@@ -84,73 +112,142 @@ rechly_llm/
 ```bash
 git clone https://github.com/rechly/rechly_llm.git
 cd rechly_llm
-python3 -m venv venv
+python3 -m venv --system-site-packages venv
 source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 2. Validate Existing Seed Data
+*(Or simply run `make install`)*
 
-Check the pre-packaged seed dataset:
+### 2. Validate Existing Dataset
+Validate the pre-packaged 800-sample balanced GoBD dataset:
 ```bash
-python scripts/validate_dataset.py data/seed_dataset.jsonl
+python scripts/validate_dataset.py data/rechly_german_accounting.jsonl
 ```
 
-### 3. Generate Large-Scale Synthetic Dataset (Optional)
-
-Generate 1,500+ diverse examples using OpenAI, Anthropic, OpenRouter, or local Ollama:
-```bash
-# Using OpenAI GPT-4o-mini
-export OPENAI_API_KEY="sk-..."
-python scripts/generate_dataset.py --provider openai --model gpt-4o-mini --output data/rechly_german_accounting.jsonl
-
-# Or using local Ollama (100% free)
-python scripts/generate_dataset.py --provider ollama --model qwen2.5-coder:14b --batch-size 2
-```
-
----
-
-## 🏋️ Training Pipelines
-
-### Option A: Google Colab (Recommended, Free T4 GPU)
-1. Open [`notebooks/rechly_de_3b_training_colab.ipynb`](notebooks/rechly_de_3b_training_colab.ipynb) in Google Colab.
-2. Select runtime: **T4 GPU** (under `Runtime` $\to$ `Change runtime type`).
-3. Upload `rechly_german_accounting.jsonl` (or use the seed dataset).
-4. Run all cells: the model trains in ~30 minutes and exports `rechly-de-3b-q4_k_m.gguf`.
-5. Download the `.gguf` file to your machine.
-
-### Option B: Local Training on Apple Silicon (MLX)
-Fine-tune directly on your Mac using Apple's MLX framework:
-```bash
-pip install mlx mlx-lm
-python scripts/train_mlx.py --data data/seed_dataset.jsonl --iters 200
-```
-
----
-
-## 🦙 Ollama Integration
-
-### 1. Register the Model
-Once you have `rechly-de-3b-q4_k_m.gguf` in your folder:
+### 3. Register Model in Ollama
 ```bash
 ollama create rechly-de-3b -f Modelfile
 ```
 
-> **Pro Tip**: Want to test the prompt & system persona immediately before training? Create a prototype alias from base Qwen:
-> ```bash
-> sed 's|./rechly-de-3b-q4_k_m.gguf|qwen2.5:3b|g' Modelfile > Modelfile.dev
-> ollama create rechly-de-3b -f Modelfile.dev
-> ```
-
-### 2. Test in Terminal
-```bash
-ollama run rechly-de-3b "Rechnung an Müller GmbH: 10 Std. Beratung à 120€, zahlbar in 14 Tagen"
-```
-
-### 3. Run Automated Benchmark
+### 4. Run the 5-Domain Benchmark
+Evaluate the model across all 5 German accounting domains:
 ```bash
 python scripts/evaluate_model.py --model rechly-de-3b
 ```
+**Current Score: 8/8 passed (100.0%)**
+
+---
+
+## 🖥️ Interactive Web Playground & API Gateway
+
+Launch the local REST API server and modern dark-mode German AI Playground:
+```bash
+python scripts/serve_api.py --port 8000 --model rechly-de-3b
+```
+Then open **[http://localhost:8000](http://localhost:8000)** in your browser!
+
+### REST API Endpoints:
+- `GET /` & `GET /demo`: Interactive German AI Web Playground UI.
+- `GET /health`: Service health and Ollama connection status.
+- `POST /api/text-to-invoice`: Natural language description $\to$ GoBD invoice JSON.
+- `POST /api/enhance-description`: Informal notes $\to$ professional B2B service descriptions.
+- `POST /api/tax-clause`: Tax scenarios $\to$ statutory clauses (§ 19, § 13b, innergemeinschaftlich, etc.).
+- `POST /api/dunning-letter`: Overdue details $\to$ German payment reminder letter (Stufe 1, 2, 3).
+- `POST /api/categorize-expense`: Receipt text $\to$ SKR03 and SKR04 DATEV account mapping with deductibility.
+- `POST /v1/chat/completions`: Standard OpenAI-compatible chat proxy for Rechly web app settings.
+
+---
+
+## 🛠️ CLI Developer Tool
+
+Rechly AI includes an ergonomic command-line interface:
+
+```bash
+# 1. Text-to-Invoice JSON
+python scripts/cli.py invoice "Rechnung an WebTech GmbH: 10 Std. Beratung à 100€"
+
+# 2. Line Item Enhancement
+python scripts/cli.py enhance "website schneller gemacht und datenbank geputzt"
+
+# 3. Tax Clauses
+python scripts/cli.py tax "Kleinunternehmer"
+
+# 4. Dunning Letters
+python scripts/cli.py dunning --nr RE-2026-001 --client "Firma GmbH" --amount 1500 --days 14 --stage 1
+
+# 5. DATEV SKR Expense Categorization
+python scripts/cli.py expense "Geschäftsessen mit Neukunden im Restaurant 180€"
+
+# 6. System Status Check
+python scripts/cli.py status
+```
+
+---
+
+## 📦 Python Client SDK
+
+Easily integrate Rechly AI into any Python service or script:
+
+```python
+from rechly_client import RechlyClient
+
+client = RechlyClient()
+
+# Text to Invoice
+invoice = client.text_to_invoice("Rechnung an Kanzlei Schmidt: 5 Std. Beratung à 120€")
+
+# DATEV Expense Categorization
+expense = client.categorize_expense("Geschäftsessen mit Kunde im Restaurant 140€")
+print(expense["skr03_account"])      # 4650
+print(expense["deductible_percent"]) # 70
+```
+
+---
+
+## 🐳 Docker Deployment
+
+Run the complete gateway and Ollama stack with a single command:
+```bash
+docker compose up -d
+```
+Access the gateway and playground at `http://localhost:8000`.
+
+---
+
+## 🏋️ Fine-Tuning Pipelines
+
+### Option A: Local Mac with Apple Silicon (MLX)
+Fine-tune directly on your Mac GPU using Apple's native MLX framework:
+```bash
+python scripts/train_mlx.py --data data/rechly_german_accounting.jsonl --iters 200 --batch-size 2
+```
+
+### Option B: PyTorch + PEFT LoRA (Apple Silicon Metal MPS / Linux CUDA / CPU)
+Train with standard open-source PyTorch with hardware acceleration:
+```bash
+python scripts/train_hf_mps.py --data data/rechly_german_accounting.jsonl --epochs 2 --batch-size 2
+```
+
+### Option C: Google Colab (Free T4 GPU, $0 Cost)
+Open [`notebooks/rechly_de_3b_training_colab.ipynb`](notebooks/rechly_de_3b_training_colab.ipynb) in Google Colab with free T4 GPU runtime.
+
+---
+
+## 🧪 Automated Test Suite
+
+Run all 31 unit and integration tests:
+```bash
+pytest tests/ -v
+```
+
+---
+
+## 💼 Career & Portfolio
+
+See [`CV_PORTFOLIO_GUIDE.md`](CV_PORTFOLIO_GUIDE.md) for ready-to-use resume bullet points, interview technical deep-dive answers, and LinkedIn showcase templates.
+
+For the Hugging Face Hub model card and metadata, see [`MODEL_CARD.md`](MODEL_CARD.md).
 
 ---
 
@@ -159,9 +256,9 @@ python scripts/evaluate_model.py --model rechly-de-3b
 1. Open your Rechly web app and navigate to **Einstellungen $\to$ KI** (`/dashboard/settings`).
 2. Select **KI-Anbieter**: `Ollama (Lokal / DSGVO-konform)`.
 3. In the **Modell** field, select or type: `rechly-de-3b`.
-4. Ensure the **Server-URL** is `http://localhost:11434/v1`.
+4. Ensure the **Server-URL** is `http://localhost:11434/v1` (or `http://localhost:8000/v1` for the API Gateway).
 5. Click **KI-Einstellungen speichern** and **KI testen**.
-6. The **Text-zu-Rechnung** prompt bar, line item optimizers, and dunning generator in Rechly will now run 100% privately and securely on your own machine!
+6. The **Text-zu-Rechnung** prompt bar, line item optimizers, and dunning generator in Rechly will now run 100% privately, securely, and locally!
 
 ---
 

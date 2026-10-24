@@ -165,20 +165,37 @@ def query_llm(
         return resp.choices[0].message.content or ""
 
     elif provider == "ollama":
-        from openai import OpenAI
-        client = OpenAI(
-            base_url=base_url or "http://localhost:11434/v1",
-            api_key="ollama",
-        )
-        resp = client.chat.completions.create(
-            model=model,
-            messages=[
+        import requests
+        endpoint = base_url or "http://localhost:11434"
+        if endpoint.endswith("/v1"):
+            endpoint = endpoint[:-3]
+        payload = {
+            "model": model,
+            "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt},
             ],
-            temperature=0.7,
-        )
-        return resp.choices[0].message.content or ""
+            "stream": False,
+            "options": {"temperature": 0.7}
+        }
+        try:
+            r = requests.post(f"{endpoint}/api/chat", json=payload, timeout=120)
+            r.raise_for_status()
+            data = r.json()
+            return data.get("message", {}).get("content", "")
+        except Exception:
+            # Fallback to OpenAI SDK format
+            from openai import OpenAI
+            client = OpenAI(base_url=f"{endpoint}/v1", api_key="ollama")
+            resp = client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=0.7,
+            )
+            return resp.choices[0].message.content or ""
 
     else:
         raise ValueError(f"Unsupported provider '{provider}'")
@@ -219,6 +236,14 @@ def run_generation(args):
     print(f"Model:       {args.model}")
     print(f"Output File: {output_path}")
     print(f"==================================================\n")
+
+    if args.provider == "engine":
+        from dataset_generator_engine import generate_full_dataset
+        total = args.count if args.count else 800
+        count = generate_full_dataset(output_path, target_total=total)
+        print(f"\n[SUCCESS] Generated {count} balanced GoBD examples with open-source engine.")
+        print(f"Run `python scripts/validate_dataset.py {output_path}` to inspect.")
+        return
 
     existing_counts = count_existing_domain_samples(output_path)
     total_existing = sum(existing_counts.values())
@@ -291,8 +316,8 @@ def run_generation(args):
 
 def main():
     parser = argparse.ArgumentParser(description="Synthetic dataset generator for Rechly-DE-3B")
-    parser.add_argument("--provider", type=str, choices=["openai", "anthropic", "openrouter", "ollama"], default="openai")
-    parser.add_argument("--model", type=str, default="gpt-4o-mini", help="Model name (e.g. gpt-4o-mini, claude-3-5-sonnet-20241022, qwen2.5:14b)")
+    parser.add_argument("--provider", type=str, choices=["engine", "ollama", "openai", "anthropic", "openrouter"], default="engine", help="Provider for dataset generation (default: open-source engine)")
+    parser.add_argument("--model", type=str, default="qwen2.5:3b", help="Model name (e.g. qwen2.5:3b, qwen2.5-coder:14b, gpt-4o-mini)")
     parser.add_argument("--output", type=str, default="data/rechly_german_accounting.jsonl", help="Path to output JSONL file")
     parser.add_argument("--domain", type=str, choices=list(DOMAINS_SPEC.keys()), default=None, help="Generate for a specific domain only")
     parser.add_argument("--count", type=int, default=None, help="Override target count for selected domain")
