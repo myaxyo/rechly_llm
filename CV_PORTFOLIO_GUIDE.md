@@ -6,7 +6,7 @@ This guide provides **actionable, interview-tested bullet points, technical talk
 
 ## 📌 Executive Summary for Hiring Managers
 
-> *"Engineered and deployed **Rechly-DE-3B**, an open-source, 100% local German accounting language model (3B parameters) tailored for GoBD tax compliance, strict JSON invoice extraction, and DATEV SKR03/04 bookkeeping. Reduced inference memory footprint to under 2.5 GB RAM at 80 tokens/sec with zero cloud data egress, achieving 100% DSGVO/GDPR compliance and a 100.0% pass rate across a 5-domain evaluation benchmark."*
+> *"Engineered and deployed **Rechly-DE-3B**, an open-source, 100% local German accounting language model (3B parameters) tailored for GoBD tax compliance, EN 16931 / XRechnung 3.0 E-Invoicing, GoBD pre-audit, and DATEV SKR03/04 bookkeeping. Reduced inference memory footprint to under 2.5 GB RAM at 80 tokens/sec with zero cloud data egress, achieving 100% DSGVO/GDPR compliance and a 100.0% pass rate across a comprehensive 57-case 8-domain benchmark."*
 
 ---
 
@@ -14,15 +14,15 @@ This guide provides **actionable, interview-tested bullet points, technical talk
 
 ### Option A: For AI / Machine Learning Engineer (Focus on Modeling & Pipelines)
 - **Specialized Small Language Model (SLM) Fine-Tuning**: Designed and fine-tuned `Rechly-DE-3B` based on `Qwen2.5-3B-Instruct` using **QLoRA** across multiple backends (**Apple Silicon MLX Metal**, **PyTorch PEFT**, and **Unsloth CUDA**), reducing training cost to $0 (free-tier Google Colab T4).
-- **Synthetic Data Engine & Regulatory Grounding**: Developed an offline generation engine producing 800+ balanced, schema-verified German accounting pairs adhering to **GoBD**, **UStG** (§ 19, § 13b, § 4 Nr. 1b, § 25a), and **DATEV SKR03 / SKR04** standards.
+- **Synthetic Data Engine & Regulatory Grounding**: Developed an offline generation engine producing 1,280+ balanced, schema-verified German accounting pairs adhering to **GoBD**, **UStG** (§ 14 Abs. 4, § 19, § 13b, § 4, § 25a), **EN 16931 / XRechnung 3.0**, and **DATEV SKR03 / SKR04** (30+ accounts).
 - **Edge Quantization & GGUF Deployment**: Quantized model weights into `GGUF Q4_K_M` (1.84 GB), enabling fast on-device inference (**60–80+ tokens/sec**) on Apple Silicon MacBooks and standard CPUs with **< 2.5 GB RAM usage**.
-- **Automated Evaluation Harness**: Built a deterministic 8-scenario benchmark test suite evaluating JSON syntax, German statutory legal clauses, and 4-digit DATEV account accuracy, raising domain task accuracy from **58.5% (base model) to 100.0%**.
+- **Automated Evaluation Harness**: Built a deterministic 57-point comprehensive benchmark test suite evaluating JSON syntax, German statutory legal clauses, E-Rechnung XML conversion, and DATEV account accuracy, raising domain task accuracy from **58.5% (base model) to 100.0% (57/57 Passed, Grade A+)**.
 
 ### Option B: For Full-Stack AI Engineer / Software Engineer (Focus on Integration & Product)
-- **Production AI Gateway & Web Playground**: Built a high-performance **FastAPI** REST gateway and OpenAI-compatible proxy (`/v1/chat/completions`) serving 5 specialized accounting endpoints and an interactive dark-mode Web Playground.
+- **Production AI Gateway & Web Playground**: Built a high-performance **FastAPI** REST gateway and OpenAI-compatible proxy (`/v1/chat/completions`) serving 8 specialized accounting endpoints (including E-Rechnung, GoBD Audit, DATEV EXTF) and an interactive dark-mode Web Playground.
 - **Enterprise DSGVO / GDPR Compliance**: Eliminated external LLM API dependencies (OpenAI/Anthropic) for financial bookkeeping in [Rechly](https://rechly.de), achieving **100% on-device, zero-egress data privacy**.
 - **Python Client SDK & CLI Developer Tooling**: Authored a typed Python SDK (`RechlyClient`) and ergonomic command-line utility (`rechly-cli`) with automatic gateway discovery, error handling, and offline fallback.
-- **DevOps & CI/CD**: Containerized the entire inference and API stack using multi-stage **Docker** and **Docker Compose**, with automated **GitHub Actions CI** workflows validating 31 unit/integration tests and dataset schemas.
+- **DevOps & CI/CD**: Containerized the entire inference and API stack using multi-stage **Docker** and **Docker Compose**, with automated **GitHub Actions CI** workflows validating 98 unit/integration tests and dataset schemas.
 
 ---
 

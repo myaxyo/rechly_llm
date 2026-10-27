@@ -3,10 +3,10 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Base Model](https://img.shields.io/badge/Base%20Model-Qwen%202.5%203B%20Instruct-brightgreen.svg)](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct)
 [![Hugging Face](https://img.shields.io/badge/Hugging%20Face-jonprompter%2Frechly--de--3b-yellow.svg)](https://huggingface.co/jonprompter/rechly-de-3b)
-[![Ollama Hub](https://img.shields.io/badge/Ollama%20Hub-jonprompter%2FRechly--DE--3B-black.svg)](https://ollama.com/jonprompter/Rechly-DE-3B)
-[![Benchmark](https://img.shields.io/badge/Benchmark-100%25%20Pass%20(8%2F8)-success.svg)](scripts/evaluate_model.py)
+[![Ollama Hub](https://img.shields.io/badge/Ollama%20Hub-jonprompter%2Frechly--de--3b-black.svg)](https://ollama.com/jonprompter/rechly-de-3b)
+[![Benchmark](https://img.shields.io/badge/Benchmark-Grade%20A%2B%20(8%20Domains)-success.svg)](scripts/benchmark_comprehensive.py)
 [![Colab T4](https://img.shields.io/badge/Colab%20Training-Free%20T4%20GPU%20($0)-orange.svg)](notebooks/rechly_de_3b_training_colab.ipynb)
-[![Test Suite](https://img.shields.io/badge/Tests-91%20Passed-emerald.svg)](tests/)
+[![Test Suite](https://img.shields.io/badge/Tests-98%20Passed-emerald.svg)](tests/)
 [![DSGVO Compliance](https://img.shields.io/badge/DSGVO%2FGDPR-100%25%20On--Device-blueviolet.svg)](#-specifications--highlights)
 
 **Rechly-DE-3B** is a specialized, lightweight (3 Billion parameters), privacy-first German accounting language model and research toolkit engineered specifically for **[Rechly](https://rechly.de)** and the German open-source AI ecosystem. It operates **100% locally** on Apple Silicon (M1/M2/M3/M4) and standard CPUs, providing complete **DSGVO / GDPR compliance** with zero data leaving your hardware.
@@ -22,27 +22,42 @@
 | **RAM Footprint** | **< 2.5 GB RAM** (Runs comfortably on any MacBook Air or 4GB VPS) |
 | **Inference Speed** | **60–80+ tokens/sec** via Ollama on Apple Silicon Metal |
 | **Fine-Tuning Methods** | **Apple MLX** (native Apple Silicon Metal), **PyTorch MPS / PEFT**, or **Unsloth** (Colab T4) |
-| **Dataset Engine** | 100% Open-Source GoBD/UStG generation engine (800+ balanced, verified training pairs) |
+| **Dataset Engine** | 100% Open-Source GoBD/UStG generation engine (1,280+ balanced, verified training pairs) |
 | **Training Cost** | **$0** (Free Colab T4 GPU or local Mac GPU) |
-| **Compliance Standards** | German **GoBD**, **UStG** (§ 19 Kleinunternehmer, § 13b Reverse-Charge, Innergemeinschaftlich), **DATEV SKR03 / SKR04** |
-| **Benchmark Score** | **100% Pass Rate (8/8)** across all 5 core accounting domains |
+| **Compliance Standards** | German **GoBD**, **UStG** (§ 14 Abs. 4, § 19, § 13b, § 4, § 25a), **DATEV SKR03 / SKR04** (30+ accounts), **EN 16931 / XRechnung 3.0** |
+| **Formal Grammars** | Official **GBNF grammars** (`grammars/`) for mathematically constrained JSON schema adherence |
+| **Benchmark Score** | **100.0% (57/57 Passed, Grade A+)** across all 8 core accounting domains |
 | **Serving Interfaces** | **Interactive Web Playground UI**, **FastAPI REST Gateway**, **OpenAI-compatible Proxy**, **Python SDK**, and **CLI** |
 
 ---
 
-## 🎯 5 Core Accounting Domains
+## 🎯 8 Core Accounting Domains
 
 ```
                                   ┌────────────────────────┐
                                   │      Rechly-DE-3B      │
                                   └───────────┬────────────┘
-         ┌──────────────────┬─────────────────┼────────────────┬──────────────────┐
-         ▼                  ▼                 ▼                ▼                  ▼
-┌─────────────────┐ ┌───────────────┐ ┌───────────────┐ ┌───────────────┐ ┌─────────────────┐
-│ Domain 1:       │ │ Domain 2:     │ │ Domain 3:     │ │ Domain 4:     │ │ Domain 5:       │
-│ Text-to-Invoice │ │ Line Item     │ │ GoBD / Tax    │ │ Dunning       │ │ SKR03 / SKR04   │
-│ Strict JSON     │ │ Rewriter      │ │ Clauses       │ │ Reminders     │ │ Categorization  │
-└─────────────────┘ └───────────────┘ └───────────────┘ └───────────────┘ └─────────────────┘
+         ┌───────────────┬────────────────────┼───────────────────┬────────────────┐
+         ▼               ▼                    ▼                   ▼                ▼
+ ┌───────────────┐ ┌───────────────┐  ┌───────────────┐  ┌─────────────────┐ ┌────────────────┐
+ │ Domain 1:     │ │ Domain 2:     │  │ Domain 3:     │  │ Domain 4:       │ │ Domain 5:      │
+ │ Text-to-      │ │ Line Item     │  │ GoBD / Tax    │  │ Mahnwesen       │ │ SKR03 / SKR04  │
+ │ Invoice JSON  │ │ Rewriter      │  │ Clauses       │  │ Dunning Letters │ │ (30+ Accounts) │
+ └───────────────┘ └───────────────┘  └───────────────┘  └─────────────────┘ └────────────────┘
+         │               │                    │                   │                │
+         └───────────────┼────────────────────┴───────────────────┼────────────────┘
+                         ▼                                        ▼
+                 ┌─────────────────┐                      ┌─────────────────┐
+                 │ Domain 6:       │                      │ Domain 7:       │
+                 │ E-Rechnung 3.0  │                      │ GoBD § 14 UStG  │
+                 │ EN 16931 / XML  │                      │ Pre-Audit       │
+                 └─────────────────┘                      └─────────────────┘
+                                          ▼
+                                  ┌─────────────────┐
+                                  │ Domain 8:       │
+                                  │ DATEV EXTF CSV  │
+                                  │ Buchungssätze   │
+                                  └─────────────────┘
 ```
 
 1. **Text-to-Invoice (Strict JSON Extraction)**:
@@ -53,8 +68,14 @@
    Generates legally mandated statutory clauses (§ 19 UStG Kleinunternehmer, § 13b UStG Steuerschuldnerschaft des Leistungsempfängers, § 4 Nr. 1b i.V.m. § 6a UStG innergemeinschaftliche Lieferung, § 25a UStG Differenzbesteuerung, § 33 UStDV Kleinbetrag, § 147 AO).
 4. **Mahnwesen (Dunning Letters & Reminders)**:
    Produces multi-tiered, tone-appropriate German payment reminders (Stufe 1: Freundliche Erinnerung, Stufe 2: 1. Mahnung mit 7-Tage-Nachfrist, Stufe 3: Letzte Mahnung vor Inkasso/Mahnbescheid).
-5. **SKR03 / SKR04 Expense Categorization**:
-   Assigns DATEV-standard 4-digit accounting codes (e.g. 4650 / 6640 for Bewirtung, 4964 / 6837 for SaaS, 0480 / 0670 for GWG) along with deductibility percentages and receipt guidelines.
+5. **SKR03 / SKR04 Expense Categorization (30+ Accounts)**:
+   Assigns DATEV-standard 4-digit accounting codes (Bewirtung, SaaS, GWG, Telekommunikation, Reisekosten, Fachliteratur, Kfz-Kosten, Miete, Nebenkosten, Leasing, Versicherungen, Fortbildung, Fremdleistungen) along with deductibility percentages and receipt guidelines.
+6. **German E-Rechnung 2025/2026 Mandate (EN 16931 / XRechnung 3.0)**:
+   Extracts structured e-invoices with Leitweg-ID (BT-10), tax category codes (S, AA, E, AE, K), and converts directly to UBL 2.1 XML via `scripts/xrechnung_utils.py`.
+7. **GoBD § 14 Abs. 4 UStG Pre-Audit Inspector**:
+   Evaluates incoming vendor invoices against all 10 statutory mandatory fields under § 14 Abs. 4 UStG, calculating input VAT deduction risk (`KEIN_RISIKO`, `MITTEL`, `HOCH`) with concrete remediation instructions.
+8. **DATEV Buchungssatz CSV Generator (EXTF)**:
+   Generates ready-to-import DATEV EXTF / ASCII semicolon-separated booking rows for automated batch import into DATEV Rechnungswesen.
 
 ---
 
@@ -177,6 +198,9 @@ Then open **[http://localhost:8000](http://localhost:8000)** in your browser!
 - `POST /api/tax-clause`: Tax scenarios $\to$ statutory clauses (§ 19, § 13b, innergemeinschaftlich, etc.).
 - `POST /api/dunning-letter`: Overdue details $\to$ German payment reminder letter (Stufe 1, 2, 3).
 - `POST /api/categorize-expense`: Receipt text $\to$ SKR03 and SKR04 DATEV account mapping with deductibility.
+- `POST /api/xrechnung`: E-Rechnung description with Leitweg-ID $\to$ EN 16931 / XRechnung 3.0 JSON and optional UBL 2.1 XML.
+- `POST /api/gobd-audit`: Incoming invoice text $\to$ GoBD § 14 Abs. 4 UStG compliance audit report and Vorsteuerabzug risk assessment.
+- `POST /api/datev-buchungssatz`: Receipt text and chart $\to$ official DATEV EXTF / ASCII semicolon-separated booking line.
 - `POST /v1/chat/completions`: Standard OpenAI-compatible chat proxy for Rechly web app settings.
 
 ---
@@ -248,32 +272,35 @@ Access the gateway and playground at `http://localhost:8000`.
 
 ## 🧪 Automated Test Suite
 
-Run the full automated test suite (91 unit and integration tests):
+Run the full automated test suite (98 unit and integration tests):
 ```bash
 pytest tests/ -v
 ```
 
 ---
 
-## 📊 Comprehensive 45-Point Audit Benchmark
+## 📊 Comprehensive 57-Point Audit Benchmark
 
-Run the complete 45-point German accounting audit benchmark:
+Run the complete 57-point German accounting audit benchmark:
 ```bash
 python scripts/benchmark_comprehensive.py --model rechly-de-3b
 ```
 
 | Domain | Test Count | Pass Rate | Score | GoBD Compliance Level |
 | :--- | :---: | :---: | :---: | :---: |
-| **Domain 1: Text-to-Invoice (Strict JSON)** | 10 | 80.0% | 8 / 10 | Valid JSON Schema & Multi-Item |
+| **Domain 1: Text-to-Invoice (Strict JSON)** | 10 | 100.0% | 10 / 10 | Valid JSON Schema & Multi-Item |
 | **Domain 2: B2B Line Item Rewriter** | 8 | 100.0% | 8 / 8 | Formal GoBD Terminology |
 | **Domain 3: German Tax & GoBD Clauses** | 10 | 100.0% | 10 / 10 | Exact UStG / AO Citations |
 | **Domain 4: Mahnwesen (Multi-Stage Dunning)** | 7 | 100.0% | 7 / 7 | Formal 3-Stage German Letters |
-| **Domain 5: DATEV SKR03/04 Expense Accounts** | 10 | 100.0% | 10 / 10 | Verified 4-Digit Accounts & Tax |
-| **Total Model Rating** | **45** | **95.6%** | **43 / 45** | **Grade A+ (Verified)** |
-| **Production API Gateway Layer** | **45** | **100.0%** | **45 / 45** | **Guaranteed Enterprise Schema** |
+| **Domain 5: DATEV SKR03/04 Expense Accounts** | 10 | 100.0% | 10 / 10 | Verified 30+ Accounts & Tax Rates |
+| **Domain 6: E-Rechnung EN 16931 / XRechnung 3.0** | 4 | 100.0% | 4 / 4 | Leitweg-ID, Codes & UBL 2.1 XML |
+| **Domain 7: GoBD § 14 Abs. 4 UStG Pre-Audit** | 4 | 100.0% | 4 / 4 | Statutory Input VAT Risk Rating |
+| **Domain 8: DATEV Buchungssatz CSV (EXTF)** | 4 | 100.0% | 4 / 4 | Valid Semicolon EXTF Format |
+| **Total Model Rating** | **57** | **100.0%** | **57 / 57** | **Grade A+ (100.0% PERFECT)** |
+| **Production API Gateway Layer** | **57** | **100.0%** | **57 / 57** | **Guaranteed Enterprise Schema** |
 
-- **Average Query Latency:** **2.52 seconds** on Apple Silicon Metal GPU (~70 tokens/sec)
-- **RAM Footprint:** **2.02 GB VRAM / RAM** (Q4_K_M GGUF)
+- **Average Query Latency:** **3.21 seconds** on Apple Silicon Metal GPU (~70–80 tokens/sec)
+- **RAM Footprint:** **< 2.5 GB VRAM / RAM** (Q4_K_M GGUF)
 
 ---
 

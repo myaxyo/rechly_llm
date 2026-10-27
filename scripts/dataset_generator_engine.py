@@ -934,6 +934,258 @@ EXPENSE_DEFINITIONS = [
         "skr03": "4630",
         "skr04": "6610",
         "note": "Betrieblich veranlasste Geschenke an Geschäftspartner bis zur gesetzlichen Freigrenze von 50 Euro netto (§ 4 Abs. 5 Nr. 1 EStG ab 2024): 100% abzugsfähig mit 19% Vorsteuer."
+    },
+    {
+        "inputs": [
+            "Monatliche Büromiete Geschäftsräume {amount}€ steuerfrei gem. § 4 Nr. 12a UStG",
+            "Mietzahlung Büro Coworking Space {amount}€ steuerfrei",
+            "Gewerberaummiete Praxisräume {amount}€ ohne MwSt",
+            "Büromiete Kaltmiete {amount}€ steuerfrei"
+        ],
+        "category": "Miete Geschäftsräume (steuerfrei)",
+        "vat_rate": 0,
+        "deductible": 100,
+        "skr03": "4210",
+        "skr04": "6310",
+        "note": "Miete für Geschäftsräume: 100% Betriebsausgabe, grundsätzlich umsatzsteuerfrei gem. § 4 Nr. 12a UStG."
+    },
+    {
+        "inputs": [
+            "Gewerbemiete Büroetage {amount}€ netto zzgl. 19% MwSt mit Vorsteueroption",
+            "Monatliche Büromiete {amount}€ netto mit 19% USt-Ausweis gem. § 9 UStG",
+            "Mietrechnung Werkstatt {amount}€ netto zzgl. 19% Umsatzsteuer",
+            "Gewerbemiete Lagerhalle {amount}€ netto mit 19% Option"
+        ],
+        "category": "Miete Geschäftsräume (19% USt)",
+        "vat_rate": 19,
+        "deductible": 100,
+        "skr03": "4210",
+        "skr04": "6310",
+        "note": "Gewerbliche Miete mit Option zur Umsatzsteuer (§ 9 UStG): 100% Betriebsausgabe mit 19% Vorsteuerabzug."
+    },
+    {
+        "inputs": [
+            "Stromrechnung Stadtwerke Büro {amount}€ netto zzgl. 19% MwSt",
+            "Heizkostenabrechnung Geschäftsräume {amount}€ netto zzgl. 19% USt",
+            "Gasrechnung für Bürogebäude {amount}€ netto zzgl. 19% MwSt",
+            "Nebenkostennachzahlung Gewerbemiete {amount}€ netto zzgl. 19% USt"
+        ],
+        "category": "Heizung, Strom und Raumnebenkosten",
+        "vat_rate": 19,
+        "deductible": 100,
+        "skr03": "4230",
+        "skr04": "6325",
+        "note": "Laufende Energiekosten und Raumnebenkosten: 100% Betriebsausgabe mit vollem Vorsteuerabzug."
+    },
+    {
+        "inputs": [
+            "Monatliche Leasingrate Firmenwagen BMW {amount}€ netto zzgl. 19% MwSt",
+            "Leasingrate Geschäftsfahrzeug Audi {amount}€ netto zzgl. 19% USt",
+            "Kfz-Leasing monatlich Volkswagen {amount}€ netto zzgl. 19% MwSt",
+            "Pkw-Leasingrate Firmenwagen {amount}€ netto zzgl. 19% Vorsteuer"
+        ],
+        "category": "Kfz-Leasing",
+        "vat_rate": 19,
+        "deductible": 100,
+        "skr03": "4570",
+        "skr04": "6570",
+        "note": "Leasingaufwand für betriebliches Kraftfahrzeug: 100% Betriebsausgabe mit 19% Vorsteuerabzug."
+    },
+    {
+        "inputs": [
+            "Kfz-Haftpflicht und Vollkasko Allianz Firmenwagen {amount}€ steuerfrei",
+            "Jahresbeitrag Kfz-Versicherung HUK Coburg {amount}€ steuerfrei",
+            "Kfz-Versicherungsbeitrag betriebliches Fahrzeug {amount}€",
+            "Pkw-Versicherung Firmenwagen Prämie {amount}€ steuerfrei"
+        ],
+        "category": "Kfz-Versicherungen und Abgaben",
+        "vat_rate": 0,
+        "deductible": 100,
+        "skr03": "4520",
+        "skr04": "6520",
+        "note": "Versicherungsbeiträge für das betriebliche Fahrzeug: 100% Betriebsausgabe, umsatzsteuerfrei gem. § 4 Nr. 10a UStG."
+    },
+    {
+        "inputs": [
+            "Hauptuntersuchung TÜV und Inspektion Firmenwagen {amount}€ netto zzgl. 19% MwSt",
+            "Reifenwechsel und Bremsenreparatur Werkstatt {amount}€ netto zzgl. 19% USt",
+            "KfZ-Reparaturrechnung Vertragswerkstatt {amount}€ netto zzgl. 19% MwSt",
+            "Inspektion und Ölwechsel Firmenfahrzeug {amount}€ netto zzgl. 19% USt"
+        ],
+        "category": "Kfz-Reparaturen und Instandhaltung",
+        "vat_rate": 19,
+        "deductible": 100,
+        "skr03": "4540",
+        "skr04": "6540",
+        "note": "Laufende Instandhaltung und Reparaturen am betrieblichen Fahrzeug: 100% Betriebsausgabe mit 19% Vorsteuerabzug."
+    },
+    {
+        "inputs": [
+            "Betriebshaftpflichtversicherung Jahresprämie {amount}€ steuerfrei",
+            "D&O Versicherung Geschäftsführer {amount}€ steuerfrei",
+            "Vermögensschaden-Haftpflichtversicherung Kanzlei {amount}€ steuerfrei",
+            "Geschäftsinhaltsversicherung Prämie {amount}€ steuerfrei"
+        ],
+        "category": "Betriebliche Versicherungen",
+        "vat_rate": 0,
+        "deductible": 100,
+        "skr03": "4360",
+        "skr04": "6400",
+        "note": "Betriebliche Versicherungen: 100% als Betriebsausgabe abzugsfähig, versicherungssteuerpflichtig aber umsatzsteuerfrei gem. § 4 Nr. 10a UStG."
+    },
+    {
+        "inputs": [
+            "Teilnahmegebühr Fachseminar Digitalisierung {amount}€ netto zzgl. 19% MwSt",
+            "Online-Schulungskurs Programmierung Zertifikat {amount}€ netto zzgl. 19% USt",
+            "Weiterbildung Führungskräfte Workshop {amount}€ netto zzgl. 19% MwSt",
+            "Fachkonferenz Ticket und Schulung {amount}€ netto zzgl. 19% USt"
+        ],
+        "category": "Fortbildung und Seminare",
+        "vat_rate": 19,
+        "deductible": 100,
+        "skr03": "4945",
+        "skr04": "6820",
+        "note": "Berufliche Fortbildungs- und Schulungskosten: 100% Betriebsausgabe mit Vorsteuerabzug."
+    },
+    {
+        "inputs": [
+            "Hetzner Dedicated Server Hosting monatlich {amount}€ netto zzgl. 19% MwSt",
+            "Domain-Registrierung und SSL-Zertifikate {amount}€ netto zzgl. 19% USt",
+            "Cloud-Server Hosting Strato {amount}€ netto zzgl. 19% MwSt",
+            "Webhosting Paket monatlich {amount}€ netto zzgl. 19% USt"
+        ],
+        "category": "Webhosting und Servermiete",
+        "vat_rate": 19,
+        "deductible": 100,
+        "skr03": "4964",
+        "skr04": "6837",
+        "note": "Webhosting, Servermiete und Domainkosten: 100% Betriebsausgabe mit 19% Vorsteuerabzug."
+    },
+    {
+        "inputs": [
+            "Subunternehmer-Rechnung Freelancer Webentwicklung {amount}€ netto zzgl. 19% MwSt",
+            "Fremdleistung Handwerker-Montage {amount}€ netto zzgl. 19% USt",
+            "Honorar externer IT-Consultant {amount}€ netto zzgl. 19% MwSt",
+            "Dienstleistung freier Mitarbeiter {amount}€ netto zzgl. 19% USt"
+        ],
+        "category": "Fremdleistungen",
+        "vat_rate": 19,
+        "deductible": 100,
+        "skr03": "3100",
+        "skr04": "5900",
+        "note": "Bezogene Fremdleistungen: 100% Betriebsausgabe mit vollem Vorsteuerabzug."
+    },
+    {
+        "inputs": [
+            "Gesetzlicher Verpflegungsmehraufwand 2-tägige Dienstreise {amount}€ steuerfrei",
+            "Pauschale für Verpflegungsmehraufwand Kundentermin über 8 Stunden {amount}€ steuerfrei",
+            "Reisekostenabrechnung Tagegeld Spesen {amount}€ steuerfrei",
+            "Tagegeld Geschäftsreise inland {amount}€ steuerfrei"
+        ],
+        "category": "Verpflegungsmehraufwand",
+        "vat_rate": 0,
+        "deductible": 100,
+        "skr03": "4668",
+        "skr04": "6668",
+        "note": "Gesetzliche Pauschalen für Verpflegungsmehraufwand nach § 9 Abs. 4a EStG: 100% steuerlich abzugsfähig, keine Umsatzsteuer."
+    },
+    {
+        "inputs": [
+            "Rechtsanwaltshonorar Vertragsprüfung {amount}€ netto zzgl. 19% MwSt",
+            "Anwaltsrechnung Markenanmeldung {amount}€ netto zzgl. 19% USt",
+            "Rechtsberatung Arbeitsrecht Kanzlei {amount}€ netto zzgl. 19% MwSt",
+            "Anwaltskosten außergerichtliche Vertretung {amount}€ netto zzgl. 19% USt"
+        ],
+        "category": "Rechtsberatung",
+        "vat_rate": 19,
+        "deductible": 100,
+        "skr03": "4950",
+        "skr04": "6825",
+        "note": "Aufwendungen für Rechtsberatung: 100% Betriebsausgabe mit 19% Vorsteuerabzug."
+    },
+    {
+        "inputs": [
+            "Wartung und Instandsetzung Kaffeemaschine Büro {amount}€ netto zzgl. 19% MwSt",
+            "Reparatur Büromöbel und Schließanlage {amount}€ netto zzgl. 19% USt",
+            "Instandhaltung Serverraum Klimasplitgerät {amount}€ netto zzgl. 19% MwSt",
+            "Wartungsdienst Aufzugsanlage Betriebsgebäude {amount}€ netto zzgl. 19% USt"
+        ],
+        "category": "Instandhaltung Betriebs- und Geschäftsausstattung",
+        "vat_rate": 19,
+        "deductible": 100,
+        "skr03": "4800",
+        "skr04": "6450",
+        "note": "Laufende Instandhaltung betrieblicher Räume und Betriebsausstattung: 100% abzugsfähig mit 19% Vorsteuer."
+    },
+    {
+        "inputs": [
+            "Monatliche Büroreinigung Reinigungsdienst {amount}€ netto zzgl. 19% MwSt",
+            "Fensterreinigung Gewerbeobjekt {amount}€ netto zzgl. 19% USt",
+            "Gebäudereinigung Praxisräume {amount}€ netto zzgl. 19% MwSt",
+            "Reinigungsdienst Geschäftsräume Monat {amount}€ netto zzgl. 19% USt"
+        ],
+        "category": "Reinigung Geschäftsräume",
+        "vat_rate": 19,
+        "deductible": 100,
+        "skr03": "4250",
+        "skr04": "6330",
+        "note": "Reinigungskosten für Geschäftsräume: 100% Betriebsausgabe mit 19% Vorsteuerabzug."
+    },
+    {
+        "inputs": [
+            "Jahresbeitrag Industrie- und Handelskammer (IHK) {amount}€ steuerfrei",
+            "Jahresbeitrag Berufsgenossenschaft BG ETEM {amount}€ steuerfrei",
+            "Kammerbeitrag Handwerkskammer HWK {amount}€ steuerfrei",
+            "Mitgliedsbeitrag berufsständische Vereinigung {amount}€ steuerfrei"
+        ],
+        "category": "Beiträge zu Berufsgenossenschaften und Kammern",
+        "vat_rate": 0,
+        "deductible": 100,
+        "skr03": "4380",
+        "skr04": "6420",
+        "note": "Gesetzliche und berufsständische Beiträge (IHK, HWK, BG): 100% Betriebsausgabe, nicht steuerbar bzw. umsatzsteuerfrei."
+    },
+    {
+        "inputs": [
+            "Druck von Firmenbroschüren und Flyern in Druckerei {amount}€ netto zzgl. 19% MwSt",
+            "Miete Messestand und Messeausstattung {amount}€ netto zzgl. 19% USt",
+            "Rollup Banner und Messeflyer Druck {amount}€ netto zzgl. 19% MwSt",
+            "Werbeschilder und Beschriftung Firmengebäude {amount}€ netto zzgl. 19% USt"
+        ],
+        "category": "Werbekosten Inland",
+        "vat_rate": 19,
+        "deductible": 100,
+        "skr03": "4600",
+        "skr04": "6600",
+        "note": "Werbe- und Messeaufwand: 100% Betriebsausgabe mit 19% Vorsteuerabzug."
+    },
+    {
+        "inputs": [
+            "Akkuschrauber und Bohrer-Set Baumarkt {amount}€ netto zzgl. 19% MwSt",
+            "Handwerkzeuge und Messgeräte Werkstatt {amount}€ netto zzgl. 19% USt",
+            "Lötkolben und Multimeter Werkzeug {amount}€ netto zzgl. 19% MwSt",
+            "Arbeitsleuchte und Werkzeugkasten {amount}€ netto zzgl. 19% USt"
+        ],
+        "category": "Werkzeuge und Kleingeräte",
+        "vat_rate": 19,
+        "deductible": 100,
+        "skr03": "4985",
+        "skr04": "6855",
+        "note": "Kleingeräte und Werkzeuge: 100% Betriebsausgabe mit 19% Vorsteuerabzug."
+    },
+    {
+        "inputs": [
+            "Sollzinsen Geschäftskredit Sparkasse {amount}€ steuerfrei",
+            "Darlehenszinsen Investitionskredit Bank {amount}€ steuerfrei",
+            "Kontokorrentzinsen Bank {amount}€ steuerfrei",
+            "Kreditzinsen Firmenfinanzierung {amount}€ steuerfrei"
+        ],
+        "category": "Zinsaufwendungen",
+        "vat_rate": 0,
+        "deductible": 100,
+        "skr03": "2120",
+        "skr04": "7310",
+        "note": "Zinsaufwendungen für betriebliche Finanzierungen: 100% Betriebsausgabe, umsatzsteuerfrei gem. § 4 Nr. 8a UStG."
     }
 ]
 
@@ -982,24 +1234,347 @@ def generate_domain_5_samples(count: int = 150, seen_hashes: Set[str] = None) ->
     return samples
 
 
-def generate_full_dataset(output_path: Path, target_total: int = 800) -> int:
-    """Generates unique, balanced synthetic dataset across all 5 domains."""
+# --- Domain 6: Text-to-XRechnung 3.0 / EN 16931 ---
+
+LEITWEG_IDS = [
+    ("04011000-12345-67", "Bundesministerium des Innern und für Heimat"),
+    ("05315000-0001-44", "Stadtverwaltung Köln - Amt für Informationsverarbeitung"),
+    ("02000000-0001-04", "Freie und Hansestadt Hamburg - Senatskanzlei"),
+    ("08111000-0001-20", "Landeshauptstadt Stuttgart - IT-Referat"),
+    ("09162000-0001-12", "Landratsamt München"),
+    ("11000000-0001-89", "Senatsverwaltung für Finanzen Berlin"),
+    ("991-01234-55", "Deutsche Bahn AG - Procurement Solutions"),
+    ("992-05678-33", "Universitätsklinikum Freiburg AöR"),
+]
+
+GERMAN_STREETS = [
+    "Hauptstraße 14", "Bahnhofstraße 22", "Friedrichstraße 102", "Berliner Allee 45",
+    "Gartenstraße 8", "Industriestraße 30", "Marktplatz 3", "Schulstraße 17",
+    "Goethestraße 19", "Schillerstraße 12", "Königsallee 60", "Technologiepark 4"
+]
+
+
+def generate_domain_6_xrechnung_samples(count: int = 120, seen_hashes: Set[str] = None) -> List[Dict[str, Any]]:
+    samples = []
+    attempts = 0
+
+    while len(samples) < count and attempts < count * 20:
+        attempts += 1
+        leitweg_id, authority_name = random.choice(LEITWEG_IDS)
+        seller_name, seller_city = generate_company_name()
+        seller_tax_id = f"{random.randint(100, 999)}/{random.randint(100, 999)}/{random.randint(10000, 99999)}"
+        seller_vat_id = f"DE{random.randint(100000000, 999999999)}"
+        buyer_vat_id = f"DE{random.randint(100000000, 999999999)}"
+        inv_no = f"RE-2025-{random.randint(1000, 9999)}"
+        day = random.randint(1, 28)
+        month = random.randint(1, 12)
+        issue_date = f"2025-{month:02d}-{day:02d}"
+        due_day = (day + 14) if (day + 14) <= 28 else 28
+        due_date = f"2025-{month:02d}-{due_day:02d}"
+
+        num_items = random.choices([1, 2], weights=[0.7, 0.3])[0]
+        selected_services = random.sample(SERVICE_CATALOG, num_items)
+
+        line_items = []
+        raw_prompt_items = []
+        total_net = 0.0
+        total_tax = 0.0
+
+        for idx, svc in enumerate(selected_services, start=1):
+            qty = random.randint(1, 15) if svc["unit"] in ("Stunde", "Stück") else 1
+            price = round(random.uniform(*svc["price_range"]), 2)
+            net_amt = round(qty * price, 2)
+            tax_rate = svc["tax"]
+            tax_amt = round(net_amt * (tax_rate / 100.0), 2)
+            
+            unit_code_map = {"Stunde": "HUR", "Stück": "C62", "Tag": "DAY", "Monat": "MON", "Pauschal": "LS"}
+            unit_code = unit_code_map.get(svc["unit"], "C62")
+            tax_cat = "S" if tax_rate == 19 else ("AA" if tax_rate == 7 else "E")
+
+            line_items.append({
+                "line_id": str(idx),
+                "name": svc["desc"],
+                "quantity": float(qty),
+                "unit_code": unit_code,
+                "unit_price": price,
+                "net_amount": net_amt,
+                "tax_category": tax_cat,
+                "tax_percent": tax_rate
+            })
+            total_net += net_amt
+            total_tax += tax_amt
+            raw_prompt_items.append(f"{qty}x {random.choice(svc['raw_names'])} à {price:.2f}€")
+
+        total_net = round(total_net, 2)
+        total_tax = round(total_tax, 2)
+        total_gross = round(total_net + total_tax, 2)
+
+        items_str = " und ".join(raw_prompt_items)
+        prompt_templates = [
+            f"Erstelle eine elektronische Rechnung im XRechnung 3.0 Standard (EN 16931) an {authority_name} (Leitweg-ID: {leitweg_id}): {items_str}, Zahlungsziel 14 Tage netto. Aussteller: {seller_name} ({seller_city}).",
+            f"Generiere eine EN 16931-konforme XRechnung für {authority_name} mit Leitweg-ID {leitweg_id}: {items_str}, Rechnungsnummer {inv_no}.",
+            f"Erzeuge die XRechnung 3.0 JSON-Struktur für {authority_name} ({leitweg_id}): {items_str}, Rechnungsdatum {issue_date}."
+        ]
+        prompt = random.choice(prompt_templates)
+        h = hashlib.sha256(prompt.strip().lower().encode("utf-8")).hexdigest()
+        if seen_hashes is not None and h in seen_hashes:
+            continue
+        if seen_hashes is not None:
+            seen_hashes.add(h)
+
+        xrechnung_obj = {
+            "buyer_reference": leitweg_id,
+            "invoice_number": inv_no,
+            "issue_date": issue_date,
+            "due_date": due_date,
+            "seller": {
+                "name": seller_name,
+                "vat_id": seller_vat_id,
+                "tax_id": seller_tax_id,
+                "street": random.choice(GERMAN_STREETS),
+                "postal_code": f"{random.randint(10000, 99999)}",
+                "city": seller_city,
+                "country_code": "DE"
+            },
+            "buyer": {
+                "name": authority_name,
+                "vat_id": buyer_vat_id,
+                "street": random.choice(GERMAN_STREETS),
+                "postal_code": f"{random.randint(10000, 99999)}",
+                "city": "Berlin" if "Berlin" in authority_name else ("Köln" if "Köln" in authority_name else seller_city),
+                "country_code": "DE"
+            },
+            "currency": "EUR",
+            "payment_terms": "Zahlbar innerhalb von 14 Tagen ab Rechnungsdatum rein netto.",
+            "line_items": line_items,
+            "total_net_amount": total_net,
+            "total_tax_amount": total_tax,
+            "total_gross_amount": total_gross
+        }
+
+        samples.append({
+            "conversations": [
+                {"from": "human", "value": prompt},
+                {"from": "gpt", "value": json.dumps(xrechnung_obj, ensure_ascii=False)}
+            ]
+        })
+
+    return samples
+
+
+# --- Domain 7: GoBD § 14 Abs. 4 UStG Pre-Audit Inspector ---
+
+def generate_domain_7_gobd_audit_samples(count: int = 120, seen_hashes: Set[str] = None) -> List[Dict[str, Any]]:
+    samples = []
+    scenarios = ["compliant", "missing_tax_id", "missing_date", "missing_invoice_number", "missing_service_period"]
+
+    attempts = 0
+    while len(samples) < count and attempts < count * 20:
+        attempts += 1
+        scenario = random.choice(scenarios)
+        seller, city = generate_company_name()
+        buyer, buyer_city = generate_company_name()
+        inv_no = f"RE-2025-{random.randint(100, 999)}"
+        date_str = f"2025-{random.randint(1, 12):02d}-{random.randint(1, 28):02d}"
+        net = round(random.uniform(300.0, 4500.0), 2)
+        tax = round(net * 0.19, 2)
+        gross = round(net + tax, 2)
+
+        if scenario == "compliant":
+            prompt = (
+                f"Prüfe folgende Eingangsrechnung auf GoBD-Konformität und Vorsteuerabzug nach § 14 Abs. 4 UStG: "
+                f"'Rechnung von {seller} ({city}, Steuernummer 12/345/67890, USt-IdNr. DE123456789), "
+                f"Rechnungsnummer {inv_no}, Ausstellungsdatum {date_str}, Leistungszeitpunkt Monat {date_str[:7]}, "
+                f"an {buyer} ({buyer_city}): IT-Consulting {net:.2f}€ netto zzgl. 19% USt ({tax:.2f}€) = {gross:.2f}€ brutto.'"
+            )
+            result = {
+                "is_compliant": True,
+                "vorsteuerabzug_risk": "KEIN_RISIKO",
+                "missing_mandatory_fields": [],
+                "findings": [
+                    "Alle 10 gesetzlichen Pflichtangaben nach § 14 Abs. 4 UStG sind vollständig und korrekt vorhanden.",
+                    "Steuernummer/USt-IdNr., einmalige Rechnungsnummer sowie Leistungszeitpunkt sind eindeutig ausgewiesen.",
+                    "Der Steuerausweis (19% MwSt) und die Rechenoperationen sind mathematisch einwandfrei."
+                ],
+                "recommendations": [
+                    "Der Beleg ist uneingeschränkt zum Vorsteuerabzug berechtigt.",
+                    "Ordnungsgemäß buchen und nach § 147 AO revisionssicher für 10 bzw. 8 Jahre aufbewahren."
+                ]
+            }
+
+        elif scenario == "missing_tax_id":
+            prompt = (
+                f"GoBD-Audit nach § 14 UStG für Eingangsrechnung durchführen: "
+                f"'Rechnung von {seller} ({city}), Rechnungsnummer {inv_no}, Datum {date_str}, "
+                f"an {buyer}: Serverwartung {net:.2f}€ netto zzgl. 19% MwSt = {gross:.2f}€ brutto. "
+                f"Keine Steuernummer und keine USt-IdNr. angegeben.'"
+            )
+            result = {
+                "is_compliant": False,
+                "vorsteuerabzug_risk": "HOCH",
+                "missing_mandatory_fields": ["Steuernummer oder USt-IdNr. des leistenden Unternehmers (§ 14 Abs. 4 Satz 1 Nr. 2 UStG)"],
+                "findings": [
+                    "Die Rechnung enthält weder eine deutsche Steuernummer noch eine gültige USt-IdNr. des Ausstellers.",
+                    "Ohne Steuernummer oder USt-IdNr. wird das Finanzamt bei einer Betriebsprüfung den Vorsteuerabzug versagen."
+                ],
+                "recommendations": [
+                    "Rechnung unverzüglich beim Rechnungssteller reklamieren und Neuausstellung mit Steuernummer/USt-IdNr. anfordern.",
+                    "Vorsteuerabzug erst nach Erhalt des berichtigten Belegs in der Umsatzsteuervoranmeldung geltend machen."
+                ]
+            }
+
+        elif scenario == "missing_date":
+            prompt = (
+                f"Ist dieser Beleg für den Vorsteuerabzug nach § 14 UStG zulässig? "
+                f"'Rechnung von {seller} ({city}, USt-IdNr. DE987654321), Rechnungsnummer {inv_no}, "
+                f"an {buyer}: Fullstack Softwareentwicklung {net:.2f}€ netto zzgl. 19% USt = {gross:.2f}€ brutto. "
+                f"Ein Ausstellungsdatum fehlt komplett.'"
+            )
+            result = {
+                "is_compliant": False,
+                "vorsteuerabzug_risk": "HOCH",
+                "missing_mandatory_fields": ["Ausstellungsdatum der Rechnung (§ 14 Abs. 4 Satz 1 Nr. 3 UStG)"],
+                "findings": [
+                    "Das Ausstellungsdatum fehlt vollständig auf dem Beleg.",
+                    "Das Ausstellungsdatum ist zwingendes Gültigkeitskriterium für den Vorsteuerabzug."
+                ],
+                "recommendations": [
+                    "Rechnung reklamieren und eine datierte Korrekturrechnung anfordern."
+                ]
+            }
+
+        elif scenario == "missing_invoice_number":
+            prompt = (
+                f"Prüfe Eingangsrechnung auf Konformität: "
+                f"'Rechnung von {seller} (Steuernummer 34/567/89012, Datum {date_str}) an {buyer}: "
+                f"Bürorenovierung {net:.2f}€ netto zzgl. 19% MwSt = {gross:.2f}€ brutto. Keine Rechnungsnummer vorhanden.'"
+            )
+            result = {
+                "is_compliant": False,
+                "vorsteuerabzug_risk": "HOCH",
+                "missing_mandatory_fields": ["Fortlaufende, einmalige Rechnungsnummer (§ 14 Abs. 4 Satz 1 Nr. 4 UStG)"],
+                "findings": [
+                    "Der Beleg weist keine fortlaufende Rechnungsnummer auf.",
+                    "Dies stellt einen gravierenden formellen Verstoß gegen § 14 Abs. 4 UStG dar."
+                ],
+                "recommendations": [
+                    "Korrekturrechnung mit eindeutiger Belegnummer verlangen, Vorsteuerabzug vorübergehend aussetzen."
+                ]
+            }
+
+        else:  # missing_service_period
+            prompt = (
+                f"Vorsteuerabzug-Prüfung § 14 Abs. 4 UStG: "
+                f"'Rechnung von {seller} (USt-IdNr. DE123456789, Rechnungsnummer {inv_no}, Ausstellungsdatum {date_str}) "
+                f"an {buyer}: Beratungsleistungen {net:.2f}€ netto zzgl. 19% USt = {gross:.2f}€ brutto. "
+                f"Kein Leistungszeitpunkt und kein Leistungszeitraum angegeben.'"
+            )
+            result = {
+                "is_compliant": False,
+                "vorsteuerabzug_risk": "MITTEL",
+                "missing_mandatory_fields": ["Zeitpunkt der Lieferung oder Leistung (§ 14 Abs. 4 Satz 1 Nr. 6 UStG)"],
+                "findings": [
+                    "Auf der Rechnung fehlt der konkrete Leistungszeitpunkt oder Leistungszeitraum.",
+                    "Das Rechnungsdatum alleine reicht nur aus, wenn ausdrücklich vermerkt ist, dass Leistungsdatum gleich Rechnungsdatum ist."
+                ],
+                "recommendations": [
+                    "Vom Aussteller schriftliche Bestätigung des Leistungszeitpunkts oder korrigierte Rechnung anfordern."
+                ]
+            }
+
+        h = hashlib.sha256(prompt.strip().lower().encode("utf-8")).hexdigest()
+        if seen_hashes is not None and h in seen_hashes:
+            continue
+        if seen_hashes is not None:
+            seen_hashes.add(h)
+
+        samples.append({
+            "conversations": [
+                {"from": "human", "value": prompt},
+                {"from": "gpt", "value": json.dumps(result, ensure_ascii=False)}
+            ]
+        })
+
+    return samples
+
+
+# --- Domain 8: DATEV Buchungssatz CSV Generator (EXTF) ---
+
+def generate_domain_8_datev_buchungssatz_samples(count: int = 120, seen_hashes: Set[str] = None) -> List[Dict[str, Any]]:
+    samples = []
+    attempts = 0
+
+    while len(samples) < count and attempts < count * 20:
+        attempts += 1
+        exp = random.choice(EXPENSE_DEFINITIONS)
+        chart = random.choice(["SKR03", "SKR04"])
+        konto = exp["skr03"] if chart == "SKR03" else exp["skr04"]
+        gegenkonto = "1200" if chart == "SKR03" else "1800"  # Bankkonto
+        
+        vat_rate = exp["vat_rate"]
+        bu_schluessel = "9" if vat_rate == 19 else ("8" if vat_rate == 7 else "")
+        
+        amount_net = round(random.uniform(25.0, 1800.0), 2)
+        amount_tax = round(amount_net * (vat_rate / 100.0), 2)
+        amount_gross = round(amount_net + amount_tax, 2)
+        
+        month = random.randint(1, 12)
+        day = random.randint(1, 28)
+        belegdatum = f"{day:02d}{month:02d}"
+        inv_no = f"RE-2025-{random.randint(100, 9999)}"
+        buchungstext = exp["category"][:30]
+
+        umsatz_str = f"{amount_gross:.2f}".replace(".", ",")
+        datev_line = f"{umsatz_str};S;EUR;;;;{konto};{gegenkonto};{bu_schluessel};{belegdatum};{inv_no};;;{buchungstext}"
+
+        raw_input = random.choice(exp["inputs"]).format(amount=f"{amount_net:.2f}")
+        prompt_templates = [
+            f"Erzeuge den DATEV-Buchungssatz (EXTF-Zeile) für folgende Ausgabe in {chart}: '{raw_input} bezahlt per Bank am {day:02d}.{month:02d}.2025, Beleg {inv_no}'",
+            f"Generiere die DATEV EXTF Buchungszeile für: '{raw_input} am {day:02d}.{month:02d}.2025 über Bank bezahlt, Beleg {inv_no}, {chart}'",
+            f"Buche als DATEV-Exportzeile ({chart}): '{raw_input}, Belegnummer {inv_no}, Datum {day:02d}.{month:02d}.2025, Bankzahlung'"
+        ]
+        prompt = random.choice(prompt_templates)
+
+        h = hashlib.sha256(prompt.strip().lower().encode("utf-8")).hexdigest()
+        if seen_hashes is not None and h in seen_hashes:
+            continue
+        if seen_hashes is not None:
+            seen_hashes.add(h)
+
+        samples.append({
+            "conversations": [
+                {"from": "human", "value": prompt},
+                {"from": "gpt", "value": datev_line}
+            ]
+        })
+
+    return samples
+
+
+def generate_full_dataset(output_path: Path, target_total: int = 1280) -> int:
+    """Generates unique, balanced synthetic dataset across all 8 domains."""
     output_path.parent.mkdir(parents=True, exist_ok=True)
     seen_hashes: Set[str] = set()
 
-    d1_cnt = int(target_total * 0.35)
-    d2_cnt = int(target_total * 0.20)
-    d3_cnt = int(target_total * 0.15)
-    d4_cnt = int(target_total * 0.15)
-    d5_cnt = target_total - (d1_cnt + d2_cnt + d3_cnt + d4_cnt)
+    d1_cnt = 280  # Domain 1: Text-to-Invoice (Strict JSON)
+    d2_cnt = 160  # Domain 2: Line Item Rewriter
+    d3_cnt = 130  # Domain 3: German Tax & GoBD Notes
+    d4_cnt = 130  # Domain 4: Mahnwesen
+    d5_cnt = 220  # Domain 5: SKR03 / SKR04 Expense Accounts (32+ accounts)
+    d6_cnt = 120  # Domain 6: E-Rechnung / XRechnung 3.0 (EN 16931)
+    d7_cnt = 120  # Domain 7: GoBD § 14 UStG Pre-Audit Inspector
+    d8_cnt = 120  # Domain 8: DATEV Buchungssatz CSV (EXTF)
 
-    print(f"Generating unique dataset of ~{target_total} examples:")
+    print(f"Generating unique dataset across all 8 domains (target: {d1_cnt + d2_cnt + d3_cnt + d4_cnt + d5_cnt + d6_cnt + d7_cnt + d8_cnt} examples):")
     all_records = []
     all_records.extend(generate_domain_1_samples(d1_cnt, seen_hashes))
     all_records.extend(generate_domain_2_samples(d2_cnt, seen_hashes))
     all_records.extend(generate_domain_3_samples(d3_cnt, seen_hashes))
     all_records.extend(generate_domain_4_samples(d4_cnt, seen_hashes))
     all_records.extend(generate_domain_5_samples(d5_cnt, seen_hashes))
+    all_records.extend(generate_domain_6_xrechnung_samples(d6_cnt, seen_hashes))
+    all_records.extend(generate_domain_7_gobd_audit_samples(d7_cnt, seen_hashes))
+    all_records.extend(generate_domain_8_datev_buchungssatz_samples(d8_cnt, seen_hashes))
 
     random.seed(42)
     random.shuffle(all_records)
@@ -1014,4 +1589,4 @@ def generate_full_dataset(output_path: Path, target_total: int = 800) -> int:
 
 if __name__ == "__main__":
     out_file = PROJECT_ROOT / "data" / "rechly_german_accounting.jsonl"
-    generate_full_dataset(out_file, target_total=800)
+    generate_full_dataset(out_file, target_total=1280)

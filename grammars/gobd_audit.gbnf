@@ -1,0 +1,13 @@
+# GBNF Grammar for Rechly GoBD / § 14 Abs. 4 UStG Pre-Audit Inspection
+# Enforces strict adherence to data/schemas/gobd_audit_schema.json
+
+root ::= "{" ws "\"is_compliant\"" ws ":" ws boolean ws "," ws "\"vorsteuerabzug_risk\"" ws ":" ws risk-enum ws "," ws "\"missing_mandatory_fields\"" ws ":" ws string-array ws "," ws "\"findings\"" ws ":" ws string-array ws "," ws "\"recommendations\"" ws ":" ws string-array ws "}"
+
+risk-enum ::= "\"KEIN_RISIKO\"" | "\"MITTEL\"" | "\"HOCH\""
+boolean ::= "true" | "false"
+
+string-array ::= "[" ws (string (ws "," ws string)*)? ws "]"
+
+# Primitives
+string ::= "\"" ([^"\\\x00-\x1F] | "\\" (["\\/bfnrt] | "u" [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F]))* "\""
+ws ::= [ \t\n\r]*

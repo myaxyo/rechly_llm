@@ -37,7 +37,7 @@ def deploy(repo_id: str, upload_gguf: bool = True, upload_mlx: bool = True, uplo
     print("   [OK] Repository ready.\n")
 
     # 2. Upload Model Card & Modelfile
-    print("2. Uploading Model Card (README.md) & Modelfile...")
+    print("2. Uploading Model Card (README.md), Modelfile, Grammars & Schemas...")
     api.upload_file(
         path_or_fileobj=str(PROJECT_ROOT / "MODEL_CARD.md"),
         path_in_repo="README.md",
@@ -50,7 +50,27 @@ def deploy(repo_id: str, upload_gguf: bool = True, upload_mlx: bool = True, uplo
         repo_id=repo_id,
         repo_type="model",
     )
-    print("   [OK] Model Card and Modelfile uploaded.\n")
+    # Upload GBNF Grammars
+    grammars_dir = PROJECT_ROOT / "grammars"
+    if grammars_dir.exists():
+        for gf in grammars_dir.glob("*.gbnf"):
+            api.upload_file(
+                path_or_fileobj=str(gf),
+                path_in_repo=f"grammars/{gf.name}",
+                repo_id=repo_id,
+                repo_type="model",
+            )
+    # Upload Schemas
+    schemas_dir = PROJECT_ROOT / "data" / "schemas"
+    if schemas_dir.exists():
+        for sf in schemas_dir.glob("*.json"):
+            api.upload_file(
+                path_or_fileobj=str(sf),
+                path_in_repo=f"schemas/{sf.name}",
+                repo_id=repo_id,
+                repo_type="model",
+            )
+    print("   [OK] Model Card, Modelfile, Grammars, and Schemas uploaded.\n")
 
     # 3. Upload Tokenizer & Configs
     mlx_dir = PROJECT_ROOT / "rechly-de-3b-mlx"

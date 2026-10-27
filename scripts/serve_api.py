@@ -19,6 +19,9 @@ from fastapi.responses import HTMLResponse, FileResponse
 from pydantic import BaseModel, Field
 import uvicorn
 
+from xrechnung_utils import to_xrechnung_ubl_xml
+from datev_utils import format_datev_buchungssatz
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 WEB_INDEX_PATH = PROJECT_ROOT / "web" / "index.html"
 
@@ -83,6 +86,23 @@ class ExpenseCategorizeRequest(BaseModel):
     model: Optional[str] = None
 
 
+class XRechnungRequest(BaseModel):
+    prompt: str = Field(..., description="E-Invoice / XRechnung prompt containing Leitweg-ID and items")
+    as_xml: Optional[bool] = Field(False, description="If true, serializes result into official UBL 2.1 XML")
+    model: Optional[str] = None
+
+
+class GoBDAuditRequest(BaseModel):
+    invoice_text: str = Field(..., description="Incoming invoice text or raw extraction to audit against § 14 Abs. 4 UStG")
+    model: Optional[str] = None
+
+
+class DatevBuchungssatzRequest(BaseModel):
+    receipt_text: str = Field(..., description="Receipt or transaction description")
+    chart: Optional[str] = Field("SKR03", description="DATEV Chart of Accounts: SKR03 or SKR04")
+    model: Optional[str] = None
+
+
 class ChatMessage(BaseModel):
     role: str
     content: str
@@ -133,6 +153,63 @@ def get_mock_response(prompt: str) -> str:
         return "Steuerfreie innergemeinschaftliche Lieferung gem. § 4 Nr. 1b i.V.m. § 6a UStG."
     elif "professionell und gobd-konform" in p_lower:
         return "Konzeption, Entwicklung und technische Implementierung optimierter Datenbankstrukturen sowie Latenzreduktion der Webapplikation."
+    elif "xrechnung" in p_lower or "leitweg-id" in p_lower or "en 16931" in p_lower:
+        return json.dumps({
+            "buyer_reference": "04011000-12345-67",
+            "invoice_number": "RE-2025-001",
+            "issue_date": "2025-02-15",
+            "due_date": "2025-03-01",
+            "seller": {
+                "name": "Rechly AI GmbH",
+                "vat_id": "DE345678901",
+                "tax_id": "123/456/78901",
+                "street": "Musterstraße 12",
+                "postal_code": "10115",
+                "city": "Berlin",
+                "country_code": "DE"
+            },
+            "buyer": {
+                "name": "Bundesministerium des Innern",
+                "vat_id": "DE123456789",
+                "street": "Alt-Moabit 140",
+                "postal_code": "10557",
+                "city": "Berlin",
+                "country_code": "DE"
+            },
+            "currency": "EUR",
+            "payment_terms": "Zahlbar innerhalb von 14 Tagen rein netto.",
+            "line_items": [
+                {
+                    "line_id": "1",
+                    "name": "Full-Stack API Entwicklung in Python",
+                    "quantity": 10.0,
+                    "unit_code": "HUR",
+                    "unit_price": 120.0,
+                    "net_amount": 1200.0,
+                    "tax_category": "S",
+                    "tax_percent": 19
+                }
+            ],
+            "total_net_amount": 1200.0,
+            "total_tax_amount": 228.0,
+            "total_gross_amount": 1428.0
+        })
+    elif "prüfe" in p_lower or "gobd" in p_lower or "vorsteuerabzug" in p_lower:
+        return json.dumps({
+            "is_compliant": True,
+            "vorsteuerabzug_risk": "KEIN_RISIKO",
+            "missing_mandatory_fields": [],
+            "findings": [
+                "Alle 10 gesetzlichen Pflichtangaben nach § 14 Abs. 4 UStG sind vollständig vorhanden.",
+                "Steuernummer, Rechnungsnummer und Leistungsdatum sind ordnungsgemäß ausgewiesen."
+            ],
+            "recommendations": [
+                "Beleg ist uneingeschränkt zum Vorsteuerabzug berechtigt.",
+                "Gemäß § 147 AO ordnungsgemäß archivieren."
+            ]
+        })
+    elif "datev" in p_lower or "extf" in p_lower or "buchungssatz" in p_lower:
+        return "142,80;S;EUR;;;;4964;1200;9;1502;RE-2025-081;;;Softwarelizenz SaaS"
     else:
         # Default text-to-invoice
         return json.dumps({
@@ -264,6 +341,38 @@ def categorize_expense(req: ExpenseCategorizeRequest):
     prompt = f"Kategorisiere für SKR03 und SKR04: '{req.receipt_text}'"
     raw = query_ollama([{"role": "user", "content": prompt}], model=req.model)
     return clean_json_response(raw)
+
+
+@app.post("/api/xrechnung")
+def generate_xrechnung(req: XRechnungRequest):
+    """Domain 6: Generates EN 16931 / XRechnung 3.0 JSON and optional UBL 2.1 XML."""
+    prompt = f"Erstelle eine elektronische Rechnung im XRechnung 3.0 Standard: {req.prompt}"
+    raw = query_ollama([{"role": "user", "content": prompt}], model=req.model)
+    data = clean_json_response(raw)
+    result = {"json_data": data}
+    if req.as_xml:
+        try:
+            result["ubl_xml"] = to_xrechnung_ubl_xml(data)
+        except Exception as e:
+            result["xml_error"] = str(e)
+    return result
+
+
+@app.post("/api/gobd-audit")
+def audit_invoice(req: GoBDAuditRequest):
+    """Domain 7: Pre-audit compliance verification of incoming invoices under § 14 Abs. 4 UStG."""
+    prompt = f"Prüfe folgende Eingangsrechnung auf GoBD-Konformität und Vorsteuerabzug nach § 14 Abs. 4 UStG: '{req.invoice_text}'"
+    raw = query_ollama([{"role": "user", "content": prompt}], model=req.model)
+    return clean_json_response(raw)
+
+
+@app.post("/api/datev-buchungssatz")
+def generate_datev_line(req: DatevBuchungssatzRequest):
+    """Domain 8: Generates DATEV EXTF ASCII semicolon-separated booking row."""
+    chart = req.chart.upper() if req.chart else "SKR03"
+    prompt = f"Erzeuge den DATEV-Buchungssatz (EXTF-Zeile) für folgende Ausgabe in {chart}: '{req.receipt_text}'"
+    raw = query_ollama([{"role": "user", "content": prompt}], model=req.model)
+    return {"chart": chart, "receipt": req.receipt_text, "datev_extf_line": raw.strip()}
 
 
 @app.post("/v1/chat/completions")

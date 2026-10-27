@@ -1,0 +1,20 @@
+# GBNF Grammar for Rechly EN 16931 / XRechnung 3.0 Generation
+# Enforces strict adherence to data/schemas/xrechnung_schema.json
+
+root ::= "{" ws "\"buyer_reference\"" ws ":" ws string ws "," ws "\"invoice_number\"" ws ":" ws string ws "," ws "\"issue_date\"" ws ":" ws date-string ws "," ws "\"due_date\"" ws ":" ws date-string ws "," ws "\"seller\"" ws ":" ws party ws "," ws "\"buyer\"" ws ":" ws party ws "," ws "\"currency\"" ws ":" ws "\"EUR\"" ws ("," ws "\"payment_terms\"" ws ":" ws (string | "null"))? ws "," ws "\"line_items\"" ws ":" ws line-items-array ws "," ws "\"total_net_amount\"" ws ":" ws number ws "," ws "\"total_tax_amount\"" ws ":" ws number ws "," ws "\"total_gross_amount\"" ws ":" ws number ws "}"
+
+party ::= "{" ws "\"name\"" ws ":" ws string ws ("," ws "\"vat_id\"" ws ":" ws (string | "null"))? ws ("," ws "\"tax_id\"" ws ":" ws (string | "null"))? ws "," ws "\"street\"" ws ":" ws string ws "," ws "\"postal_code\"" ws ":" ws string ws "," ws "\"city\"" ws ":" ws string ws "," ws "\"country_code\"" ws ":" ws country-code ws "}"
+
+line-items-array ::= "[" ws line-item (ws "," ws line-item)* ws "]"
+
+line-item ::= "{" ws "\"line_id\"" ws ":" ws string ws "," ws "\"name\"" ws ":" ws string ws "," ws "\"quantity\"" ws ":" ws number ws "," ws "\"unit_code\"" ws ":" ws unit-code ws "," ws "\"unit_price\"" ws ":" ws number ws "," ws "\"net_amount\"" ws ":" ws number ws "," ws "\"tax_category\"" ws ":" ws tax-cat-code ws "," ws "\"tax_percent\"" ws ":" ws tax-pct-code ws "}"
+
+unit-code ::= "\"HUR\"" | "\"C62\"" | "\"DAY\"" | "\"MON\"" | "\"LS\""
+tax-cat-code ::= "\"S\"" | "\"AA\"" | "\"E\"" | "\"AE\"" | "\"K\""
+tax-pct-code ::= "19" | "7" | "0"
+country-code ::= "\"DE\"" | "\"AT\"" | "\"CH\"" | "\"FR\"" | "\"NL\"" | "\"IT\"" | "\"ES\"" | "\"LU\""
+
+date-string ::= "\"" [0-9] [0-9] [0-9] [0-9] "-" [0-9] [0-9] "-" [0-9] [0-9] "\""
+string ::= "\"" ([^"\\\x00-\x1F] | "\\" (["\\/bfnrt] | "u" [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F]))* "\""
+number ::= ("-"? ([0-9] | [1-9] [0-9]*)) ("." [0-9]+)? ([eE] [-+]? [0-9]+)?
+ws ::= [ \t\n\r]*

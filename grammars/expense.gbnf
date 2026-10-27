@@ -1,0 +1,12 @@
+# GBNF Grammar for Rechly DATEV SKR03 / SKR04 Expense Categorization
+# Enforces strict adherence to data/schemas/expense_schema.json
+
+root ::= "{" ws "\"category\"" ws ":" ws string ws "," ws "\"vat_rate\"" ws ":" ws vat-enum ws "," ws "\"deductible_percent\"" ws ":" ws number ws "," ws "\"skr03_account\"" ws ":" ws account-code ws "," ws "\"skr04_account\"" ws ":" ws account-code ws "," ws "\"note\"" ws ":" ws string ws "}"
+
+vat-enum ::= "0" | "7" | "19"
+account-code ::= "\"" [0-9] [0-9] [0-9] [0-9] "\""
+
+# Primitives
+string ::= "\"" ([^"\\\x00-\x1F] | "\\" (["\\/bfnrt] | "u" [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F]))* "\""
+number ::= ("-"? ([0-9] | [1-9] [0-9]*)) ("." [0-9]+)? ([eE] [-+]? [0-9]+)?
+ws ::= [ \t\n\r]*

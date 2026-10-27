@@ -1,7 +1,15 @@
 #!/usr/bin/env python3
 """
 Dataset Validator for Rechly-DE-3B Training Data
-Validates ShareGPT JSONL files against strict GoBD, tax rules, and JSON schemas.
+Validates ShareGPT JSONL files against strict GoBD, tax rules, and JSON schemas across all 8 domains:
+1. Text-to-Invoice (Strict JSON)
+2. B2B Line Item Rewriter
+3. German Tax & GoBD Notes
+4. Mahnwesen (Payment Reminders)
+5. SKR03 / SKR04 Expense Accounts
+6. E-Rechnung / XRechnung 3.0 (EN 16931)
+7. GoBD § 14 Abs. 4 UStG Pre-Audit Inspector
+8. DATEV Buchungssatz CSV Generator
 
 Usage:
     python scripts/validate_dataset.py [path_to_dataset.jsonl]
@@ -20,6 +28,8 @@ from jsonschema import validate, ValidationError
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 INVOICE_SCHEMA_PATH = PROJECT_ROOT / "data" / "schemas" / "invoice_schema.json"
 EXPENSE_SCHEMA_PATH = PROJECT_ROOT / "data" / "schemas" / "expense_schema.json"
+XRECHNUNG_SCHEMA_PATH = PROJECT_ROOT / "data" / "schemas" / "xrechnung_schema.json"
+GOBD_AUDIT_SCHEMA_PATH = PROJECT_ROOT / "data" / "schemas" / "gobd_audit_schema.json"
 
 
 def load_schema(path: Path) -> Dict[str, Any]:
@@ -31,23 +41,38 @@ def load_schema(path: Path) -> Dict[str, Any]:
 
 INVOICE_SCHEMA = load_schema(INVOICE_SCHEMA_PATH)
 EXPENSE_SCHEMA = load_schema(EXPENSE_SCHEMA_PATH)
+XRECHNUNG_SCHEMA = load_schema(XRECHNUNG_SCHEMA_PATH)
+GOBD_AUDIT_SCHEMA = load_schema(GOBD_AUDIT_SCHEMA_PATH)
 
 
 def identify_domain(human_prompt: str, gpt_response: str) -> str:
     cleaned = gpt_response.strip()
-    if cleaned.startswith("{") and "items" in cleaned:
-        return "domain_1_text_to_invoice"
-    if cleaned.startswith("{") and ("skr03" in cleaned or "skr04" in cleaned):
-        return "domain_5_skr_expenses"
-    combined = (human_prompt + " " + gpt_response).lower()
-    if any(k in human_prompt.lower() for k in ["mahnung", "zahlungserinnerung", "überfällig"]):
+    p_lower = human_prompt.lower()
+
+    if cleaned.startswith("{"):
+        if "buyer_reference" in cleaned and "line_items" in cleaned:
+            return "domain_6_xrechnung"
+        if "vorsteuerabzug_risk" in cleaned and "is_compliant" in cleaned:
+            return "domain_7_gobd_audit"
+        if "items" in cleaned and "client_name" in cleaned:
+            return "domain_1_text_to_invoice"
+        if "skr03" in cleaned or "skr04" in cleaned:
+            return "domain_5_skr_expenses"
+
+    if (";S;EUR;" in cleaned or ";H;EUR;" in cleaned) or (cleaned.count(";") >= 6 and ("datev" in p_lower or "buchungssatz" in p_lower or "extf" in p_lower)):
+        return "domain_8_datev_buchungssatz"
+
+    if any(k in p_lower for k in ["mahnung", "zahlungserinnerung", "überfällig"]):
         return "domain_4_dunning"
+
+    combined = (p_lower + " " + cleaned).lower()
     if any(k in combined for k in [
         "§ 19", "§ 13b", "innergemeinschaft", "steuerfrei", "ausfuhr", "ustg",
         "pflichtangabe", "klausel", "ustdv", "§ 147 ao", "aufbewahrungsfrist",
         "differenzbesteuerung", "§ 25a", "§ 14 abs. 4", "§ 33", "steuerschuldnerschaft"
     ]):
         return "domain_3_tax_compliance"
+
     return "domain_2_line_item_enhancement"
 
 
@@ -76,10 +101,17 @@ def validate_sharegpt_record(record: Dict[str, Any], line_num: int) -> Tuple[boo
     human_val = human_msg["value"].strip()
     gpt_val = gpt_msg["value"].strip()
     domain = identify_domain(human_val, gpt_val)
-    if gpt_val.startswith(("{", "[")) and domain not in ("domain_1_text_to_invoice", "domain_5_skr_expenses"):
+
+    structured_domains = (
+        "domain_1_text_to_invoice",
+        "domain_5_skr_expenses",
+        "domain_6_xrechnung",
+        "domain_7_gobd_audit"
+    )
+    if gpt_val.startswith(("{", "[")) and domain not in structured_domains:
         return False, "Unrecognized structured response", "unknown"
 
-    # Domain 1 validation: Strict Invoice JSON
+    # Domain 1: Strict Invoice JSON
     if domain == "domain_1_text_to_invoice":
         try:
             data = strict_loads(gpt_val)
@@ -95,13 +127,12 @@ def validate_sharegpt_record(record: Dict[str, Any], line_num: int) -> Tuple[boo
             if not isinstance(data.get("items"), list) or len(data["items"]) == 0:
                 return False, "Domain 1 JSON must include at least one item in 'items'", domain
 
-        # Tax rate check
         for item in data.get("items", []):
             tax = item.get("tax_rate_percent")
             if tax not in (0, 7, 19):
                 return False, f"Invalid tax_rate_percent {tax}, must be 0, 7, or 19", domain
 
-    # Domain 5 validation: Strict Expense JSON
+    # Domain 5: Strict Expense JSON
     elif domain == "domain_5_skr_expenses":
         try:
             data = strict_loads(gpt_val)
@@ -119,6 +150,48 @@ def validate_sharegpt_record(record: Dict[str, Any], line_num: int) -> Tuple[boo
             if not (acc.isdigit() and len(acc) == 4):
                 return False, f"Account {k} must be 4 digits, got '{acc}'", domain
 
+    # Domain 6: Strict XRechnung 3.0 / EN 16931 JSON
+    elif domain == "domain_6_xrechnung":
+        try:
+            data = strict_loads(gpt_val)
+        except ValueError as e:
+            return False, f"Domain 6 GPT response is not valid JSON: {e}", domain
+
+        if validate and XRECHNUNG_SCHEMA:
+            try:
+                validate(instance=data, schema=XRECHNUNG_SCHEMA)
+            except ValidationError as e:
+                return False, f"Domain 6 failed schema validation: {e.message}", domain
+
+        if not str(data.get("buyer_reference", "")).strip():
+            return False, "Domain 6 missing buyer_reference (Leitweg-ID)", domain
+
+    # Domain 7: Strict GoBD Pre-Audit JSON
+    elif domain == "domain_7_gobd_audit":
+        try:
+            data = strict_loads(gpt_val)
+        except ValueError as e:
+            return False, f"Domain 7 GPT response is not valid JSON: {e}", domain
+
+        if validate and GOBD_AUDIT_SCHEMA:
+            try:
+                validate(instance=data, schema=GOBD_AUDIT_SCHEMA)
+            except ValidationError as e:
+                return False, f"Domain 7 failed schema validation: {e.message}", domain
+
+        if data.get("vorsteuerabzug_risk") not in ("KEIN_RISIKO", "MITTEL", "HOCH"):
+            return False, f"Invalid vorsteuerabzug_risk: {data.get('vorsteuerabzug_risk')}", domain
+
+    # Domain 8: DATEV Buchungssatz CSV
+    elif domain == "domain_8_datev_buchungssatz":
+        parts = gpt_val.split(";")
+        if len(parts) < 7:
+            return False, f"DATEV Buchungssatz must contain at least 7 fields, got {len(parts)}", domain
+        if parts[1].upper() not in ("S", "H"):
+            return False, f"Invalid Soll/Haben flag in DATEV line: {parts[1]}", domain
+        if parts[2].upper() != "EUR":
+            return False, f"Invalid currency in DATEV line: {parts[2]}", domain
+
     return True, "", domain
 
 
@@ -135,6 +208,9 @@ def validate_file(file_path: Path) -> bool:
         "domain_3_tax_compliance": 0,
         "domain_4_dunning": 0,
         "domain_5_skr_expenses": 0,
+        "domain_6_xrechnung": 0,
+        "domain_7_gobd_audit": 0,
+        "domain_8_datev_buchungssatz": 0,
         "unknown": 0,
     }
 
@@ -159,7 +235,6 @@ def validate_file(file_path: Path) -> bool:
                 errors.append(f"Line {idx} [{domain}]: {msg}")
                 continue
 
-            # Check duplicates based on human prompt
             human_text = record["conversations"][0]["value"].strip().lower()
             prompt_hash = hashlib.sha256(human_text.encode("utf-8")).hexdigest()
             if prompt_hash in seen_hashes:
@@ -182,6 +257,9 @@ def validate_file(file_path: Path) -> bool:
         "domain_3_tax_compliance": "Domain 3: German Tax & GoBD Notes",
         "domain_4_dunning": "Domain 4: Mahnwesen (Payment Reminders)",
         "domain_5_skr_expenses": "Domain 5: SKR03 / SKR04 Expense Accounts",
+        "domain_6_xrechnung": "Domain 6: E-Rechnung / XRechnung 3.0 (EN 16931)",
+        "domain_7_gobd_audit": "Domain 7: GoBD § 14 UStG Pre-Audit Inspector",
+        "domain_8_datev_buchungssatz": "Domain 8: DATEV Buchungssatz CSV (EXTF)",
     }
     for dom_key, label in domain_names.items():
         cnt = domain_counts.get(dom_key, 0)
@@ -205,6 +283,6 @@ def validate_file(file_path: Path) -> bool:
 
 
 if __name__ == "__main__":
-    target_path = Path(sys.argv[1]) if len(sys.argv) > 1 else PROJECT_ROOT / "data" / "seed_dataset.jsonl"
+    target_path = Path(sys.argv[1]) if len(sys.argv) > 1 else PROJECT_ROOT / "data" / "rechly_german_accounting.jsonl"
     success = validate_file(target_path)
     sys.exit(0 if success else 1)

@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RechlyXRechnungDraft",
+  "description": "Standard JSON format for EN 16931 / XRechnung 3.0 electronic invoice generation in Rechly",
+  "type": "object",
+  "required": [
+    "buyer_reference",
+    "invoice_number",
+    "issue_date",
+    "due_date",
+    "seller",
+    "buyer",
+    "currency",
+    "line_items",
+    "total_net_amount",
+    "total_tax_amount",
+    "total_gross_amount"
+  ],
+  "properties": {
+    "buyer_reference": {
+      "type": "string",
+      "description": "BT-10 Buyer reference or German Leitweg-ID (e.g. 04011000-12345-67)"
+    },
+    "invoice_number": {
+      "type": "string",
+      "description": "BT-1 Unique consecutive invoice number"
+    },
+    "issue_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "description": "BT-2 Invoice issue date in YYYY-MM-DD format"
+    },
+    "due_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "description": "BT-9 Payment due date in YYYY-MM-DD format"
+    },
+    "seller": {
+      "type": "object",
+      "required": ["name", "street", "postal_code", "city", "country_code"],
+      "properties": {
+        "name": { "type": "string" },
+        "vat_id": { "type": ["string", "null"] },
+        "tax_id": { "type": ["string", "null"] },
+        "street": { "type": "string" },
+        "postal_code": { "type": "string" },
+        "city": { "type": "string" },
+        "country_code": { "type": "string", "pattern": "^[A-Z]{2}$" }
+      }
+    },
+    "buyer": {
+      "type": "object",
+      "required": ["name", "street", "postal_code", "city", "country_code"],
+      "properties": {
+        "name": { "type": "string" },
+        "vat_id": { "type": ["string", "null"] },
+        "street": { "type": "string" },
+        "postal_code": { "type": "string" },
+        "city": { "type": "string" },
+        "country_code": { "type": "string", "pattern": "^[A-Z]{2}$" }
+      }
+    },
+    "currency": {
+      "type": "string",
+      "enum": ["EUR"]
+    },
+    "payment_terms": {
+      "type": ["string", "null"]
+    },
+    "line_items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["line_id", "name", "quantity", "unit_code", "unit_price", "net_amount", "tax_category", "tax_percent"],
+        "properties": {
+          "line_id": { "type": "string" },
+          "name": { "type": "string" },
+          "quantity": { "type": "number", "exclusiveMinimum": 0 },
+          "unit_code": {
+            "type": "string",
+            "enum": ["HUR", "C62", "DAY", "MON", "LS"]
+          },
+          "unit_price": { "type": "number", "minimum": 0 },
+          "net_amount": { "type": "number", "minimum": 0 },
+          "tax_category": {
+            "type": "string",
+            "enum": ["S", "AA", "E", "AE", "K"]
+          },
+          "tax_percent": {
+            "type": "integer",
+            "enum": [0, 7, 19]
+          }
+        }
+      }
+    },
+    "total_net_amount": { "type": "number", "minimum": 0 },
+    "total_tax_amount": { "type": "number", "minimum": 0 },
+    "total_gross_amount": { "type": "number", "minimum": 0 }
+  }
+}

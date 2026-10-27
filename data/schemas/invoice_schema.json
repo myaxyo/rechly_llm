@@ -43,7 +43,7 @@
           },
           "unit_of_measure": {
             "type": "string",
-            "enum": ["Stunde", "Stück", "Tag", "Pauschal", "Monat"]
+            "enum": ["Stunde", "Stunden", "Stück", "Tag", "Tage", "Pauschal", "Monat", "Monate"]
           },
           "price": {
             "type": "number",

@@ -1,0 +1,17 @@
+# GBNF Grammar for Rechly Text-to-Invoice Generation
+# Enforces strict adherence to data/schemas/invoice_schema.json
+
+root ::= "{" ws "\"client_name\"" ws ":" ws string ws "," ws "\"due_days\"" ws ":" ws integer ws ("," ws "\"payment_terms\"" ws ":" ws (string | "null") ws)? ("," ws "\"notes\"" ws ":" ws (string | "null") ws)? "," ws "\"items\"" ws ":" ws items-array ws "}"
+
+items-array ::= "[" ws item (ws "," ws item)* ws "]"
+
+item ::= "{" ws "\"description\"" ws ":" ws string ws "," ws "\"quantity\"" ws ":" ws number ws "," ws "\"unit_of_measure\"" ws ":" ws unit-enum ws "," ws "\"price\"" ws ":" ws number ws "," ws "\"tax_rate_percent\"" ws ":" ws tax-rate-enum ws "}"
+
+unit-enum ::= "\"Stunde\"" | "\"Stück\"" | "\"Tag\"" | "\"Pauschal\"" | "\"Monat\""
+tax-rate-enum ::= "19" | "7" | "0"
+
+# Primitives
+string ::= "\"" ([^"\\\x00-\x1F] | "\\" (["\\/bfnrt] | "u" [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F] [0-9a-fA-F]))* "\""
+integer ::= ("0" | [1-9] [0-9]*)
+number ::= ("-"? ([0-9] | [1-9] [0-9]*)) ("." [0-9]+)? ([eE] [-+]? [0-9]+)?
+ws ::= [ \t\n\r]*

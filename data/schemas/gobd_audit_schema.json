@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RechlyGoBDAuditResult",
+  "description": "Standard JSON format for GoBD / § 14 Abs. 4 UStG incoming invoice pre-audit compliance verification",
+  "type": "object",
+  "required": [
+    "is_compliant",
+    "vorsteuerabzug_risk",
+    "missing_mandatory_fields",
+    "findings",
+    "recommendations"
+  ],
+  "properties": {
+    "is_compliant": {
+      "type": "boolean",
+      "description": "True if invoice fulfills all statutory mandatory fields under § 14 Abs. 4 UStG"
+    },
+    "vorsteuerabzug_risk": {
+      "type": "string",
+      "enum": ["KEIN_RISIKO", "MITTEL", "HOCH"],
+      "description": "Assessment of input VAT deduction risk according to tax audit guidelines"
+    },
+    "missing_mandatory_fields": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "List of missing or non-compliant statutory invoice elements"
+    },
+    "findings": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Detailed factual audit observations"
+    },
+    "recommendations": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Actionable instructions for accountant or supplier invoice correction"
+    }
+  }
+}

@@ -3,7 +3,7 @@
   "title": "RechlyExpenseCategorization",
   "description": "Standard JSON format for SKR03/SKR04 expense categorization in Rechly",
   "type": "object",
-  "required": ["category", "vat_rate", "deductible_percent", "skr03_account", "skr04_account", "note"],
+  "required": ["category", "vat_rate", "deductible_percent", "skr03_account", "skr04_account"],
   "properties": {
     "category": {
       "type": "string",

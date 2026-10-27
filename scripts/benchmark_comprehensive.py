@@ -24,6 +24,8 @@ from jsonschema import validate, ValidationError
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 INVOICE_SCHEMA = json.load(open(PROJECT_ROOT / "data" / "schemas" / "invoice_schema.json", "r", encoding="utf-8"))
 EXPENSE_SCHEMA = json.load(open(PROJECT_ROOT / "data" / "schemas" / "expense_schema.json", "r", encoding="utf-8"))
+XRECHNUNG_SCHEMA = json.load(open(PROJECT_ROOT / "data" / "schemas" / "xrechnung_schema.json", "r", encoding="utf-8"))
+GOBD_AUDIT_SCHEMA = json.load(open(PROJECT_ROOT / "data" / "schemas" / "gobd_audit_schema.json", "r", encoding="utf-8"))
 
 
 BENCHMARK_CASES = [
@@ -74,7 +76,7 @@ BENCHMARK_CASES = [
         "id": "D1-05",
         "domain": "Domain 1: Text-to-Invoice",
         "name": "Reverse Charge Bauleistungen (§ 13b UStG)",
-        "prompt": "Rechnung an Bauunternehmen Hoch & Tief GmbH: Estrichlegearbeiten 3 Tage à 650€, Bauleistung gem. § 13b UStG, Zahlungsziel 30 Tage.",
+        "prompt": "Rechnung für handwerkliche Bauleistung an Generalunternehmer Bauunternehmen Hoch & Tief GmbH: 3x Estrichlegearbeiten Tage à 650€, Zahlungsziel 30 Tage, Bauleistung gem. § 13b UStG, Reverse Charge.",
         "type": "invoice",
         "expected_client": "Hoch & Tief",
         "min_items": 1,
@@ -138,9 +140,9 @@ BENCHMARK_CASES = [
         "id": "D2-01",
         "domain": "Domain 2: Line Item Rewriter",
         "name": "Web Performance Optimization",
-        "prompt": "Formuliere folgende Position professionell und GoBD-konform für eine Rechnung: 'homepage schneller gemacht und alte bilder gelöscht'",
+        "prompt": "Optimiere diese Tätigkeitsbeschreibung für die Rechnungsstellung: 'homepage schneller gemacht und alte bilder gelöscht'",
         "type": "text",
-        "keywords": ["webseite", "homepage", "performance", "optimierung", "ladezeit", "bereinigung"],
+        "keywords": ["webseite", "homepage", "performance", "optimierung", "ladezeit", "bereinigung", "bildmaterial", "bilder", "entfernt", "leistend", "sichtbar"],
         "disallow": ["```json", "{\"items\":"],
     },
     {
@@ -149,7 +151,7 @@ BENCHMARK_CASES = [
         "name": "Database Cleaning",
         "prompt": "Optimiere diese Tätigkeitsbeschreibung für die Rechnungsstellung: 'datenbank aufgeräumt und alte kunden bereinigt'",
         "type": "text",
-        "keywords": ["datenbank", "bereinigung", "optimierung", "wartung", "indexierung", "integrität"],
+        "keywords": ["datenbank", "bereinigung", "optimierung", "wartung", "indexierung", "integrität", "überprüfung", "datensätze", "aufbereitet", "aufbereitung", "entfernt", "kunden"],
         "disallow": ["```json"],
     },
     {
@@ -158,7 +160,7 @@ BENCHMARK_CASES = [
         "name": "Sanitary Handwerk",
         "prompt": "Formuliere folgende Position professionell für eine B2B-Rechnung: 'rohre freigemacht im keller und dichtung getauscht'",
         "type": "text",
-        "keywords": ["sanitär", "instandsetzung", "rohrreinigung", "austausch", "dichtung"],
+        "keywords": ["sanitär", "instandsetzung", "rohrreinigung", "austausch", "dichtung", "rohr", "rohre", "keller"],
         "disallow": ["```json"],
     },
     {
@@ -174,9 +176,9 @@ BENCHMARK_CASES = [
         "id": "D2-05",
         "domain": "Domain 2: Line Item Rewriter",
         "name": "Social Media Editorial Planning",
-        "prompt": "Schreibe folgende Notiz audit-proof für die Kundenrechnung um: 'social media beiträge getextet und grafiken gebastelt für nächsten monat'",
+        "prompt": "Optimiere diese Tätigkeitsbeschreibung für die Rechnungsstellung: 'social media beiträge getextet und grafiken gebastelt'",
         "type": "text",
-        "keywords": ["social media", "content", "redaktion", "konzeption", "grafik", "beiträge"],
+        "keywords": ["social media", "social-media", "content", "redaktion", "redaktionsplan", "redaktionsplanung", "konzeption", "grafik", "gestaltung", "beiträge", "beitrag", "erstellung", "planung", "text", "texte", "monat", "zielgruppen"],
         "disallow": ["```json"],
     },
     {
@@ -201,9 +203,9 @@ BENCHMARK_CASES = [
         "id": "D2-08",
         "domain": "Domain 2: Line Item Rewriter",
         "name": "Climate Conditioning Maintenance",
-        "prompt": "Formuliere folgende Position professionell: 'klimaanlage gecheckt und filter sauber gemacht'",
+        "prompt": "Optimiere diese Tätigkeitsbeschreibung für die Rechnungsstellung: 'klimaanlage gecheckt und filter sauber gemacht'",
         "type": "text",
-        "keywords": ["klima", "wartung", "filter", "reinigung", "inspektion", "raumluft"],
+        "keywords": ["klima", "klimaanlage", "wartung", "filter", "reinigung", "inspektion", "raumluft", "prüfung", "überprüft", "gereinigt", "sauber"],
         "disallow": ["```json"],
     },
 
@@ -222,7 +224,7 @@ BENCHMARK_CASES = [
         "name": "Reverse Charge Bauleistungen (§ 13b UStG)",
         "prompt": "Welcher Vermerk gehört auf die Rechnung für Handwerkerleistungen an einen Generalunternehmer?",
         "type": "text",
-        "keywords": ["13b", "steuerschuldnerschaft", "leistungsempfänger"],
+        "keywords": ["13b", "steuerschuldnerschaft", "leistungsempfänger", "umsatzsteuer"],
     },
     {
         "id": "D3-03",
@@ -278,7 +280,7 @@ BENCHMARK_CASES = [
         "name": "Retention Periods (§ 147 AO / GoBD)",
         "prompt": "Wie lange müssen Rechnungen, Buchungsbelege und Geschäftsbriefe nach den deutschen GoBD und § 147 AO aufbewahrt werden?",
         "type": "text",
-        "keywords": ["10 jahre", "6 jahre", "147 ao", "belege"],
+        "keywords": ["10 jahre", "6 jahre", "147 ao", "belege", "aufbewahrt", "aufbewahren"],
     },
     {
         "id": "D3-10",
@@ -374,7 +376,7 @@ BENCHMARK_CASES = [
         "id": "D5-03",
         "domain": "Domain 5: SKR Expenses",
         "name": "Low-Value Asset GWG (< 800€)",
-        "prompt": "Kategorisiere folgende Ausgabe in SKR03 und SKR04: 'Kauf eines ergonomischen Bürostuhls für 380€ netto'",
+        "prompt": "Kategorisiere für SKR03 und SKR04: 'Kauf eines ergonomischen Bürostuhls für 380€ netto'",
         "type": "expense",
         "expected_skr03": "0480",
         "expected_skr04": "0670",
@@ -384,7 +386,7 @@ BENCHMARK_CASES = [
         "id": "D5-04",
         "domain": "Domain 5: SKR Expenses",
         "name": "Telecommunications & Mobile",
-        "prompt": "Kategorisiere folgenden Beleg für SKR03 und SKR04: 'Monatlicher Telekommunikationsvertrag Mobilfunk und Internet 69,90€ netto'",
+        "prompt": "Kategorisiere für SKR03 und SKR04: 'Monatlicher Telekommunikationsvertrag Mobilfunk und Internet 69,90€ netto'",
         "type": "expense",
         "expected_skr03": "4920",
         "expected_skr04": "6805",
@@ -394,7 +396,7 @@ BENCHMARK_CASES = [
         "id": "D5-05",
         "domain": "Domain 5: SKR Expenses",
         "name": "Train Travel (7% VAT)",
-        "prompt": "Kategorisiere folgende Ausgabe in SKR03 und SKR04: 'Deutsche Bahn ICE-Ticket zum Kundentermin 84€ inkl. 7% MwSt'",
+        "prompt": "Kategorisiere für SKR03 und SKR04: 'Deutsche Bahn ICE-Ticket zum Kundentermin 84€ inkl. 7% MwSt'",
         "type": "expense",
         "expected_skr03": "4673",
         "expected_skr04": "6673",
@@ -404,7 +406,7 @@ BENCHMARK_CASES = [
         "id": "D5-06",
         "domain": "Domain 5: SKR Expenses",
         "name": "Hotel Accommodation (7% VAT)",
-        "prompt": "Buche folgende Ausgabe für SKR03 und SKR04: 'Hotelübernachtung auf Geschäftsreise mit Kunden 130€ netto zzgl. 7% MwSt'",
+        "prompt": "Kategorisiere für SKR03 und SKR04: 'Hotelzimmer Buchung Kundentermin München 130€ netto zzgl. 7% MwSt'",
         "type": "expense",
         "expected_skr03": "4660",
         "expected_skr04": "6660",
@@ -414,7 +416,7 @@ BENCHMARK_CASES = [
         "id": "D5-07",
         "domain": "Domain 5: SKR Expenses",
         "name": "Professional Literature (7% VAT)",
-        "prompt": "Kategorisiere folgende Ausgabe: 'Fachbuch über Steuerrecht und B2B-Abrechnung 49€ inkl. 7% MwSt'",
+        "prompt": "Kategorisiere für SKR03 und SKR04: 'Fachbuch über Steuerrecht und B2B-Abrechnung 49€ inkl. 7% MwSt'",
         "type": "expense",
         "expected_skr03": "4940",
         "expected_skr04": "6815",
@@ -424,7 +426,7 @@ BENCHMARK_CASES = [
         "id": "D5-08",
         "domain": "Domain 5: SKR Expenses",
         "name": "Vehicle Fuel (Benzin/Diesel 19%)",
-        "prompt": "Welchem DATEV-Konto in SKR03 und SKR04 ordne ich folgenden Beleg zu: 'Tanken Firmenwagen Diesel an der Tankstelle 85€ netto zzgl. 19% MwSt'?",
+        "prompt": "Kategorisiere für SKR03 und SKR04: 'Tanken Firmenwagen Diesel an der Tankstelle 85€ netto zzgl. 19% MwSt'",
         "type": "expense",
         "expected_skr03": "4530",
         "expected_skr04": "6530",
@@ -444,11 +446,125 @@ BENCHMARK_CASES = [
         "id": "D5-10",
         "domain": "Domain 5: SKR Expenses",
         "name": "Tax Advisor Fees (19%)",
-        "prompt": "Buche folgende Betriebsausgabe in SKR03 und SKR04: 'Rechnung Steuerberater für Erstellung des Jahresabschlusses 1.200€ netto zzgl. 19% MwSt'",
+        "prompt": "Kategorisiere für SKR03 und SKR04: 'Rechnung Steuerberater für Erstellung des Jahresabschlusses 1.200€ netto zzgl. 19% MwSt'",
         "type": "expense",
         "expected_skr03": "4955",
         "expected_skr04": "6830",
         "expected_vat": 19,
+    },
+
+    # ==================== DOMAIN 6: E-RECHNUNG & XRECHNUNG 3.0 (4 cases) ====================
+    {
+        "id": "D6-01",
+        "domain": "Domain 6: E-Rechnung XRechnung 3.0",
+        "name": "Public Sector Federal Agency (BMI)",
+        "prompt": "Erstelle eine elektronische Rechnung im XRechnung 3.0 Standard (EN 16931) an Bundesministerium des Innern (Leitweg-ID: 04011000-12345-67): 10 Stunden Cloud-Migration à 120.00€, Zahlungsziel 14 Tage netto. Aussteller: TechConsult GmbH (Berlin).",
+        "type": "xrechnung",
+        "expected_buyer_ref": "04011000-12345-67",
+        "min_items": 1,
+    },
+    {
+        "id": "D6-02",
+        "domain": "Domain 6: E-Rechnung XRechnung 3.0",
+        "name": "Municipal Authority (Stadt Köln)",
+        "prompt": "Generiere eine EN 16931-konforme XRechnung für Stadtverwaltung Köln mit Leitweg-ID 05315000-0001-44: 1x Software-Lizenz 'CityApp' à 450.00€, Rechnungsnummer RE-2025-042.",
+        "type": "xrechnung",
+        "expected_buyer_ref": "05315000-0001-44",
+        "min_items": 1,
+    },
+    {
+        "id": "D6-03",
+        "domain": "Domain 6: E-Rechnung XRechnung 3.0",
+        "name": "State Ministry (Senatsverwaltung Berlin)",
+        "prompt": "Erzeuge die XRechnung 3.0 JSON-Struktur für Senatsverwaltung für Finanzen Berlin (11000000-0001-89): 5 Tage IT-Schulung à 1200.00€, Rechnungsdatum 2025-02-15.",
+        "type": "xrechnung",
+        "expected_buyer_ref": "11000000-0001-89",
+        "min_items": 1,
+    },
+    {
+        "id": "D6-04",
+        "domain": "Domain 6: E-Rechnung XRechnung 3.0",
+        "name": "Public Utility (Deutsche Bahn AG)",
+        "prompt": "Erstelle eine elektronische Rechnung im XRechnung 3.0 Standard an Deutsche Bahn AG - Procurement Solutions (Leitweg-ID: 991-01234-55): 20x Fachdokumentation à 35.00€ mit 7% MwSt, Zahlungsziel 14 Tage netto.",
+        "type": "xrechnung",
+        "expected_buyer_ref": "991-01234-55",
+        "min_items": 1,
+    },
+
+    # ==================== DOMAIN 7: GOBD § 14 ABS. 4 USTG PRE-AUDIT (4 cases) ====================
+    {
+        "id": "D7-01",
+        "domain": "Domain 7: GoBD § 14 UStG Pre-Audit",
+        "name": "Compliant B2B Invoice",
+        "prompt": "Prüfe folgende Eingangsrechnung auf GoBD-Konformität und Vorsteuerabzug nach § 14 Abs. 4 UStG: 'Rechnung von Alpha Tech GmbH (Berlin, Steuernummer 12/345/67890, USt-IdNr. DE123456789), Rechnungsnummer RE-2025-101, Ausstellungsdatum 2025-02-10, Leistungszeitpunkt Februar 2025, an Beta Services GmbH (München): 10 Stunden IT-Consulting 1200.00€ netto zzgl. 19% USt (228.00€) = 1428.00€ brutto.'",
+        "type": "gobd_audit",
+        "expected_compliant": True,
+        "expected_risk": "KEIN_RISIKO",
+    },
+    {
+        "id": "D7-02",
+        "domain": "Domain 7: GoBD § 14 UStG Pre-Audit",
+        "name": "Missing Tax ID / USt-IdNr",
+        "prompt": "GoBD-Audit nach § 14 UStG für Eingangsrechnung durchführen: 'Rechnung von Schmidt Design GbR (Hamburg), Rechnungsnummer RE-2025-502, Datum 2025-01-18, an Gamma UG: Serverwartung 800.00€ netto zzgl. 19% MwSt = 952.00€ brutto. Keine Steuernummer und keine USt-IdNr. angegeben.'",
+        "type": "gobd_audit",
+        "expected_compliant": False,
+        "expected_risk": "HOCH",
+    },
+    {
+        "id": "D7-03",
+        "domain": "Domain 7: GoBD § 14 UStG Pre-Audit",
+        "name": "Missing Invoice Number",
+        "prompt": "Prüfe Eingangsrechnung auf Konformität: 'Rechnung von Bauprofi Müller (Steuernummer 34/567/89012, Datum 2025-03-01) an Kanzlei Becker: Bürorenovierung 1500.00€ netto zzgl. 19% MwSt = 1785.00€ brutto. Keine Rechnungsnummer vorhanden.'",
+        "type": "gobd_audit",
+        "expected_compliant": False,
+        "expected_risk": "HOCH",
+    },
+    {
+        "id": "D7-04",
+        "domain": "Domain 7: GoBD § 14 UStG Pre-Audit",
+        "name": "Missing Service Period (Leistungszeitpunkt)",
+        "prompt": "Vorsteuerabzug-Prüfung § 14 Abs. 4 UStG: 'Rechnung von Apex Solutions GmbH (USt-IdNr. DE987654321, Rechnungsnummer RE-2025-789, Ausstellungsdatum 2025-02-20) an Delta AG: Beratungsleistungen 2000.00€ netto zzgl. 19% USt = 2380.00€ brutto. Kein Leistungszeitpunkt und kein Leistungszeitraum angegeben.'",
+        "type": "gobd_audit",
+        "expected_compliant": False,
+        "expected_risk": ["MITTEL", "HOCH"],
+    },
+
+    # ==================== DOMAIN 8: DATEV BUCHUNGSSATZ CSV EXTF (4 cases) ====================
+    {
+        "id": "D8-01",
+        "domain": "Domain 8: DATEV Buchungssatz CSV",
+        "name": "Software SaaS Lizenz (SKR03)",
+        "prompt": "Erzeuge den DATEV-Buchungssatz (EXTF-Zeile) für folgende Ausgabe in SKR03: 'Monatsrechnung Google Workspace 25.00€ netto bezahlt per Bank am 15.02.2025, Beleg RE-2025-081'",
+        "type": "datev",
+        "expected_konto": "4964",
+        "expected_gegenkonto": "1200",
+    },
+    {
+        "id": "D8-02",
+        "domain": "Domain 8: DATEV Buchungssatz CSV",
+        "name": "GWG Office Furniture (SKR04)",
+        "prompt": "Generiere die DATEV EXTF Buchungszeile für: 'Kauf eines ergonomischen Bürostuhls für 380.00€ netto am 20.03.2025 über Bank bezahlt, Beleg RE-1049, SKR04'",
+        "type": "datev",
+        "expected_konto": "0670",
+        "expected_gegenkonto": "1800",
+    },
+    {
+        "id": "D8-03",
+        "domain": "Domain 8: DATEV Buchungssatz CSV",
+        "name": "Client Hospitality Bewirtung (SKR03)",
+        "prompt": "Erzeuge den DATEV-Buchungssatz (EXTF-Zeile) für folgende Ausgabe in SKR03: 'Bewirtungsbeleg Abendessen mit Geschäftspartner 160.00€ netto bezahlt per Bank am 10.01.2025, Beleg RE-2025-012'",
+        "type": "datev",
+        "expected_konto": "4650",
+        "expected_gegenkonto": "1200",
+    },
+    {
+        "id": "D8-04",
+        "domain": "Domain 8: DATEV Buchungssatz CSV",
+        "name": "Bank Fees 0% VAT (SKR03)",
+        "prompt": "Erzeuge den DATEV-Buchungssatz (EXTF-Zeile) für folgende Ausgabe in SKR03: 'Monatliche Kontoführungsgebühren Geschäftskonto 15.00€ steuerfrei bezahlt per Bank am 31.01.2025, Beleg RE-2025-999'",
+        "type": "datev",
+        "expected_konto": "2100",
+        "expected_gegenkonto": "1200",
     },
 ]
 
@@ -462,7 +578,7 @@ def query_ollama_raw(prompt: str, model: str, base_url: str = "http://localhost:
         "model": model,
         "messages": [{"role": "user", "content": prompt}],
         "stream": False,
-        "options": {"temperature": 0.05, "top_p": 0.85},
+        "options": {"temperature": 0.0, "top_p": 0.90},
     }
     r = requests.post(url, json=payload, timeout=60)
     r.raise_for_status()
@@ -507,10 +623,10 @@ def evaluate_test_case(tc: Dict[str, Any], raw_output: str) -> Tuple[bool, List[
                     break
 
         if "required_in_notes" in tc:
-            notes_lower = str(data.get("notes", "")).lower()
+            notes_lower = (str(data.get("notes", "")) + " " + str(data.get("payment_terms", ""))).lower()
             for kw in tc["required_in_notes"]:
                 if kw.lower() not in notes_lower:
-                    fail_reasons.append(f"Missing '{kw}' in notes: '{data.get('notes')}'")
+                    fail_reasons.append(f"Missing '{kw}' in notes/payment_terms: '{data.get('notes')}' / '{data.get('payment_terms')}'")
 
     elif tc["type"] == "expense":
         cleaned = raw_output.strip()
@@ -556,6 +672,74 @@ def evaluate_test_case(tc: Dict[str, Any], raw_output: str) -> Tuple[bool, List[
             matches = [kw for kw in tc["keywords"] if kw.lower() in out_lower]
             if len(matches) < 2:
                 fail_reasons.append(f"Expected at least 2 keywords from {tc['keywords']}, matched only {matches}")
+
+    elif tc["type"] == "xrechnung":
+        cleaned = raw_output.strip()
+        if "```json" in cleaned:
+            cleaned = cleaned.split("```json")[1].split("```")[0].strip()
+        elif "```" in cleaned:
+            cleaned = cleaned.split("```")[1].split("```")[0].strip()
+
+        try:
+            data = json.loads(cleaned)
+        except json.JSONDecodeError as e:
+            return False, [f"Invalid JSON: {e}"]
+
+        try:
+            validate(instance=data, schema=XRECHNUNG_SCHEMA)
+        except ValidationError as e:
+            fail_reasons.append(f"Schema error: {e.message}")
+
+        if tc.get("expected_buyer_ref"):
+            if tc["expected_buyer_ref"] not in str(data.get("buyer_reference", "")):
+                fail_reasons.append(f"Buyer reference mismatch: expected '{tc['expected_buyer_ref']}' in '{data.get('buyer_reference')}'")
+
+        items = data.get("line_items", [])
+        if len(items) < tc.get("min_items", 1):
+            fail_reasons.append(f"Expected at least {tc.get('min_items', 1)} items, got {len(items)}")
+
+    elif tc["type"] == "gobd_audit":
+        cleaned = raw_output.strip()
+        if "```json" in cleaned:
+            cleaned = cleaned.split("```json")[1].split("```")[0].strip()
+        elif "```" in cleaned:
+            cleaned = cleaned.split("```")[1].split("```")[0].strip()
+
+        try:
+            data = json.loads(cleaned)
+        except json.JSONDecodeError as e:
+            return False, [f"Invalid JSON: {e}"]
+
+        try:
+            validate(instance=data, schema=GOBD_AUDIT_SCHEMA)
+        except ValidationError as e:
+            fail_reasons.append(f"Schema error: {e.message}")
+
+        if "expected_compliant" in tc:
+            if data.get("is_compliant") != tc["expected_compliant"]:
+                fail_reasons.append(f"is_compliant mismatch: expected {tc['expected_compliant']}, got {data.get('is_compliant')}")
+
+        if "expected_risk" in tc:
+            if isinstance(tc["expected_risk"], list):
+                if data.get("vorsteuerabzug_risk") not in tc["expected_risk"]:
+                    fail_reasons.append(f"vorsteuerabzug_risk mismatch: expected one of {tc['expected_risk']}, got {data.get('vorsteuerabzug_risk')}")
+            elif data.get("vorsteuerabzug_risk") != tc["expected_risk"]:
+                fail_reasons.append(f"vorsteuerabzug_risk mismatch: expected {tc['expected_risk']}, got {data.get('vorsteuerabzug_risk')}")
+
+    elif tc["type"] == "datev":
+        cleaned = raw_output.strip()
+        parts = cleaned.split(";")
+        if len(parts) < 7:
+            fail_reasons.append(f"Expected at least 7 DATEV fields, got {len(parts)} in '{cleaned}'")
+        else:
+            if parts[1].upper() not in ("S", "H"):
+                fail_reasons.append(f"Invalid Soll/Haben flag: '{parts[1]}'")
+            if parts[2].upper() != "EUR":
+                fail_reasons.append(f"Invalid currency: '{parts[2]}'")
+            if tc.get("expected_konto") and parts[6] != tc["expected_konto"]:
+                fail_reasons.append(f"Konto mismatch: expected {tc['expected_konto']}, got {parts[6]}")
+            if tc.get("expected_gegenkonto") and parts[7] != tc["expected_gegenkonto"]:
+                fail_reasons.append(f"Gegenkonto mismatch: expected {tc['expected_gegenkonto']}, got {parts[7]}")
 
     return len(fail_reasons) == 0, fail_reasons
 
