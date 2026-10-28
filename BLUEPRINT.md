@@ -118,6 +118,5 @@ Format each example as a single JSON line:
 - **Developer Makefile (`Makefile`)**: Shortcuts for `make test`, `make benchmark`, `make validate`, `make serve`, and `make docker-up`.
 - **Continuous Integration (`.github/workflows/ci.yml`)**: Multi-Python CI workflow testing 31 unit & integration tests and dataset validation.
 - **Hugging Face Model Card (`MODEL_CARD.md`)**: Complete model card ready for Hugging Face Hub with metadata tags.
-- **CV & Job Search Guide (`CV_PORTFOLIO_GUIDE.md`)**: Comprehensive technical interview guide, quantifiable metrics, and LinkedIn portfolio templates.
 
 *Note on empirical methodology: Record hardware, memory, runtime, model revision, dataset hashes, inference parameters and failure examples for every experiment. Claims about tokens per second, memory footprint, training time or legal correctness require evidence.*

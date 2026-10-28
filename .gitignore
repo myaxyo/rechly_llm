@@ -57,6 +57,9 @@ data/mlx_splits/
 .DS_Store
 Thumbs.db
 
+# Private guides & portfolio notes
+CV_PORTFOLIO_GUIDE.md
+
 # Local experiments and test outputs
 reports/
 adapters/

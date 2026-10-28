@@ -84,7 +84,6 @@
 ```
 rechly_llm/
 ├── BLUEPRINT.md                         # Detailed architecture and design specification
-├── CV_PORTFOLIO_GUIDE.md                # CV bullet points, interview Q&A, and technical talking points
 ├── MODEL_CARD.md                        # Official Hugging Face Model Card and metadata
 ├── Modelfile                            # Production Ollama Modelfile with GGUF ChatML configuration
 ├── Modelfile.dev                        # Standalone Ollama Modelfile using base Qwen weights
@@ -304,11 +303,9 @@ python scripts/benchmark_comprehensive.py --model rechly-de-3b
 
 ---
 
-## 💼 Career & Portfolio Guide
+## 📦 Model Card & Hugging Face
 
-See [`CV_PORTFOLIO_GUIDE.md`](CV_PORTFOLIO_GUIDE.md) for ready-to-use resume bullet points, interview technical deep-dive answers, and LinkedIn showcase templates.
-
-For the Hugging Face Hub model card and metadata, see [`MODEL_CARD.md`](MODEL_CARD.md) and [https://huggingface.co/jonprompter/rechly-de-3b](https://huggingface.co/jonprompter/rechly-de-3b).
+For the official Hugging Face Hub model card, GGUF weights, and GBNF grammars, see [`MODEL_CARD.md`](MODEL_CARD.md) and [https://huggingface.co/jonprompter/rechly-de-3b](https://huggingface.co/jonprompter/rechly-de-3b).
 
 ---
 
