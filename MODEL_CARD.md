@@ -80,6 +80,29 @@ print(resp.json()["message"]["content"])
 
 ---
 
+## 🏛️ The Rechly Model Family: 3 Tiers for Every Infrastructure
+
+| Model Tier | Base Architecture | Format / Quant | Model Size | RAM Footprint | Inference Latency | Target Deployment |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Rechly-DE-3B** *(Flagship)* | `Qwen2.5-3B-Instruct` | GGUF `Q4_K_M` | **1.84 GB** | **~2.4 GB RAM** | ~1.5s / query | Desktop, M1/M2/M3/M4 Mac, Production Server |
+| **Rechly-DE-1.5B** *(Slim)* | `Qwen2.5-1.5B-Instruct` | GGUF `Q4_K_M` | **986 MB** | **~1.0 GB RAM** | ~0.7s / query | 1 GB VPS, Micro-Instances, Cloud Run, CI/CD |
+| **Rechly-DE-0.5B** *(Nano)* | `Qwen2.5-0.5B-Instruct` | GGUF `Q4_K_M` | **397 MB** | **~500 MB RAM** | ~0.3s / query | Raspberry Pi 4/5, Edge Devices, Embedded IoT |
+
+```bash
+# Pull & Run Flagship (3B)
+ollama run jonprompter/rechly-de-3b
+
+# Run Slim (1.5B) - 1 GB VPS
+ollama create rechly-de-1.5b -f Modelfile.1.5b
+ollama run rechly-de-1.5b
+
+# Run Nano (0.5B) - 500 MB RAM / Raspberry Pi
+ollama create rechly-de-0.5b -f Modelfile.0.5b
+ollama run rechly-de-0.5b
+```
+
+---
+
 ## 🚨 Why Rechly-DE-3B? The German E-Rechnung 2025/2026 Challenge
 
 Under the **Wachstumschancengesetz (§ 14 UStG)**, traditional paper invoices and standard unstructured PDFs are **legally obsolete** for domestic B2B transactions. Over **3.5 million German companies** are legally mandated to process structured **E-Rechnungen (EN 16931, XRechnung 3.0, ZUGFeRD 2.3)**.

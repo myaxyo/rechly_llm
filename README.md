@@ -34,6 +34,36 @@
 
 ---
 
+## 🏛️ The Rechly Model Family: 3 Tiers for Every Infrastructure
+
+To ensure German accounting AI is accessible everywhere—from budget 1 GB VPS micro-instances and edge IoT appliances up to enterprise workstations—Rechly is available in three calibrated tiers sharing the same GoBD/UStG compliance specifications and deterministic engine:
+
+| Model Tier | Base Architecture | Format / Quant | Model Size | RAM Footprint | Inference Latency | Target Environment |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Rechly-DE-3B** *(Flagship)* | `Qwen2.5-3B-Instruct` | GGUF `Q4_K_M` | **1.84 GB** | **~2.4 GB RAM** | ~1.5s / query | Desktop, M1/M2/M3/M4 Mac, Production Server |
+| **Rechly-DE-1.5B** *(Slim)* | `Qwen2.5-1.5B-Instruct` | GGUF `Q4_K_M` | **986 MB** | **~1.0 GB RAM** | ~0.7s / query | 1 GB VPS, Micro-Instances, Cloud Run, CI/CD |
+| **Rechly-DE-0.5B** *(Nano)* | `Qwen2.5-0.5B-Instruct` | GGUF `Q4_K_M` | **397 MB** | **~500 MB RAM** | ~0.3s / query | Raspberry Pi 4/5, Edge Devices, Embedded IoT |
+
+### Running the Tiers Locally:
+
+```bash
+# Tier 1: Rechly-DE-3B (Flagship)
+ollama pull jonprompter/rechly-de-3b
+# Or build from local weights:
+ollama create rechly-de-3b -f Modelfile
+
+# Tier 2: Rechly-DE-1.5B (Slim - 1 GB VPS & Cloud Run)
+ollama create rechly-de-1.5b -f Modelfile.1.5b
+
+# Tier 3: Rechly-DE-0.5B (Nano - Raspberry Pi & 512MB RAM)
+ollama create rechly-de-0.5b -f Modelfile.0.5b
+```
+
+> [!TIP]
+> **Zero-Footprint Guarantee**: Domains 9–12 (ZUGFeRD 2.3 PDF/A-3 Hybrid Generator, DATEV Format 700 Batch Exporter, Commercial Rounding § 35 UStDV, and KoSIT Rule Validator) run 100% deterministically in Python with **0 MB LLM memory overhead**, providing cent-exact financial calculations and official format compliance across all three tiers.
+
+---
+
 ## 🎯 12 Core Accounting & Compliance Domains
 
 ```

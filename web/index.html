@@ -125,6 +125,33 @@
       gap: 1rem;
     }
 
+    .model-select-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(30, 41, 59, 0.75);
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      border-radius: 10px;
+      padding: 0.35rem 0.75rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    }
+
+    .model-dropdown {
+      background: transparent;
+      color: #f3f4f6;
+      border: none;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .model-dropdown option {
+      background: #0f172a;
+      color: #f3f4f6;
+    }
+
     .btn-link {
       color: var(--text-muted);
       text-decoration: none;
@@ -558,13 +585,21 @@
       <div class="brand-block">
         <div class="logo-badge">R</div>
         <div class="brand-text">
-          <h1>Rechly-DE-3B <span class="status-badge" id="statusBadge"><span class="status-dot"></span> 100% DSGVO Lokal</span></h1>
-          <p>Spezialisiertes deutsches KI-Modell für GoBD, UStG &amp; DATEV SKR</p>
+          <h1 id="headerTitle">Rechly-DE-3B <span class="status-badge" id="statusBadge"><span class="status-dot"></span> 100% DSGVO Lokal</span></h1>
+          <p>Spezialisiertes deutsches Buchhaltungs-KI-Ökosystem für GoBD, UStG &amp; DATEV</p>
         </div>
       </div>
       <div class="header-links">
+        <div class="model-select-wrapper">
+          <label for="modelSelector" style="font-size:0.72rem; color:var(--text-muted); font-weight:700;">MODELL:</label>
+          <select id="modelSelector" class="model-dropdown" onchange="onModelChange(this.value)">
+            <option value="rechly-de-3b" selected>⚡ Rechly-DE-3B (Flagship · 2.4 GB RAM)</option>
+            <option value="rechly-de-1.5b">🪶 Rechly-DE-1.5B (Slim · 1.0 GB RAM)</option>
+            <option value="rechly-de-0.5b">🔬 Rechly-DE-0.5B (Nano · 500 MB RAM)</option>
+          </select>
+        </div>
         <a href="/docs" target="_blank" class="btn-link">⚡ OpenAPI Docs</a>
-        <a href="https://github.com/rechly/rechly_llm" target="_blank" class="btn-link">🐙 GitHub Repo</a>
+        <a href="https://github.com/myaxyo/rechly_llm" target="_blank" class="btn-link">🐙 GitHub Repo</a>
         <a href="https://rechly.de" target="_blank" class="btn-link" style="color:#60a5fa; font-weight:600;">rechly.de ↗</a>
       </div>
     </div>
@@ -582,19 +617,19 @@
       </div>
       <div class="metrics-bar">
         <div class="metric-item">
-          <div class="metric-value">Qwen 2.5 3B</div>
-          <div class="metric-label">Basis-Architektur</div>
+          <div class="metric-value" id="metricArch">Qwen 2.5 3B</div>
+          <div class="metric-label" id="metricArchLabel">Basis-Architektur</div>
         </div>
         <div class="metric-item">
-          <div class="metric-value">Q4_K_M GGUF</div>
-          <div class="metric-label">Quantisierung (1.8 GB)</div>
+          <div class="metric-value" id="metricQuant">Q4_K_M (1.9 GB)</div>
+          <div class="metric-label" id="metricQuantLabel">Dateigröße / Format</div>
         </div>
         <div class="metric-item">
-          <div class="metric-value">100.0% Pass</div>
-          <div class="metric-label">5-Domain Benchmark</div>
+          <div class="metric-value" id="metricRam">~2.4 GB RAM</div>
+          <div class="metric-label">RAM-Bedarf</div>
         </div>
         <div class="metric-item">
-          <div class="metric-value" id="latencyDisplay">~1.8s</div>
+          <div class="metric-value" id="latencyDisplay">~1.5s</div>
           <div class="metric-label">Latenz (Apple Silicon)</div>
         </div>
       </div>
@@ -1080,6 +1115,39 @@
       document.getElementById('expensePrompt').value = presets[idx] || '';
     }
 
+    function getSelectedModel() {
+      const sel = document.getElementById('modelSelector');
+      return sel ? sel.value : 'rechly-de-3b';
+    }
+
+    function onModelChange(modelId) {
+      const arch = document.getElementById('metricArch');
+      const quant = document.getElementById('metricQuant');
+      const ram = document.getElementById('metricRam');
+      const lat = document.getElementById('latencyDisplay');
+      const title = document.getElementById('headerTitle');
+
+      if (modelId === 'rechly-de-0.5b') {
+        arch.innerText = 'Qwen 2.5 0.5B';
+        quant.innerText = 'Q4_K_M (397 MB)';
+        ram.innerText = '~500 MB RAM';
+        lat.innerText = '~0.3s';
+        if (title) title.innerHTML = 'Rechly-DE-0.5B <span class="status-badge" id="statusBadge"><span class="status-dot"></span> Nano · 500 MB RAM</span>';
+      } else if (modelId === 'rechly-de-1.5b') {
+        arch.innerText = 'Qwen 2.5 1.5B';
+        quant.innerText = 'Q4_K_M (986 MB)';
+        ram.innerText = '~1.0 GB RAM';
+        lat.innerText = '~0.7s';
+        if (title) title.innerHTML = 'Rechly-DE-1.5B <span class="status-badge" id="statusBadge"><span class="status-dot"></span> Slim · 1.0 GB RAM</span>';
+      } else {
+        arch.innerText = 'Qwen 2.5 3B';
+        quant.innerText = 'Q4_K_M (1.9 GB)';
+        ram.innerText = '~2.4 GB RAM';
+        lat.innerText = '~1.5s';
+        if (title) title.innerHTML = 'Rechly-DE-3B <span class="status-badge" id="statusBadge"><span class="status-dot"></span> Flagship · 2.4 GB RAM</span>';
+      }
+    }
+
     // API Callers
     async function runTextToInvoice() {
       const prompt = document.getElementById('invoicePrompt').value.trim();
@@ -1098,7 +1166,7 @@
         const res = await fetch('/api/text-to-invoice', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({prompt})
+          body: JSON.stringify({prompt, model: getSelectedModel()})
         });
         const data = await res.json();
         const duration = ((performance.now() - t0) / 1000).toFixed(2);
@@ -1151,7 +1219,7 @@
         const res = await fetch('/api/enhance-description', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({raw_note})
+          body: JSON.stringify({raw_note, model: getSelectedModel()})
         });
         const data = await res.json();
         document.getElementById('itemBeforeNote').innerText = data.original;
@@ -1176,7 +1244,7 @@
         const res = await fetch('/api/tax-clause', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({scenario})
+          body: JSON.stringify({scenario, model: getSelectedModel()})
         });
         const data = await res.json();
         document.getElementById('taxScenarioDisplay').innerText = data.scenario;
@@ -1200,7 +1268,8 @@
         client_name: document.getElementById('dunnClient').value,
         amount: parseFloat(document.getElementById('dunnAmount').value),
         overdue_days: parseInt(document.getElementById('dunnDays').value),
-        stage: parseInt(document.getElementById('dunnStage').value)
+        stage: parseInt(document.getElementById('dunnStage').value),
+        model: getSelectedModel()
       };
 
       try {
@@ -1231,7 +1300,7 @@
         const res = await fetch('/api/categorize-expense', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({receipt_text})
+          body: JSON.stringify({receipt_text, model: getSelectedModel()})
         });
         const data = await res.json();
         document.getElementById('skr03Account').innerText = data.skr03_account || '-';
@@ -1301,7 +1370,7 @@
         const res = await fetch('/api/xrechnung', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({prompt, as_xml: true})
+          body: JSON.stringify({prompt, as_xml: true, model: getSelectedModel()})
         });
         const data = await res.json();
         const invoiceData = data.json_data || {};
@@ -1602,7 +1671,7 @@
         const res = await fetch('/api/gobd-audit', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({invoice_text})
+          body: JSON.stringify({invoice_text, model: getSelectedModel()})
         });
         const data = await res.json();
         rawOut.innerText = JSON.stringify(data, null, 2);

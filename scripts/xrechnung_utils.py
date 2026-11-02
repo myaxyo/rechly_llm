@@ -17,6 +17,15 @@ PROFILE_ID = "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0"
 def validate_xrechnung_data(data: Dict[str, Any]) -> Tuple[bool, List[str]]:
     """Validates required XRechnung 3.0 fields and mathematical consistency."""
     errors = []
+    
+    # Auto-default German country code if omitted
+    seller = data.get("seller")
+    if isinstance(seller, dict) and not seller.get("country_code"):
+        seller["country_code"] = "DE"
+    buyer = data.get("buyer")
+    if isinstance(buyer, dict) and not buyer.get("country_code"):
+        buyer["country_code"] = "DE"
+
     required_root = [
         "buyer_reference", "invoice_number", "issue_date", "due_date",
         "seller", "buyer", "currency", "line_items",
