@@ -21,6 +21,9 @@ import uvicorn
 
 from xrechnung_utils import to_xrechnung_ubl_xml
 from datev_utils import format_datev_buchungssatz
+from zugferd_generator import create_zugferd_pdf, extract_zugferd_xml, verify_zugferd_pdf
+from receipt_vision_ocr import process_receipt_image
+import base64
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 WEB_INDEX_PATH = PROJECT_ROOT / "web" / "index.html"
@@ -101,6 +104,22 @@ class DatevBuchungssatzRequest(BaseModel):
     receipt_text: str = Field(..., description="Receipt or transaction description")
     chart: Optional[str] = Field("SKR03", description="DATEV Chart of Accounts: SKR03 or SKR04")
     model: Optional[str] = None
+
+
+class ZUGFeRDGenerateRequest(BaseModel):
+    invoice_data: Dict[str, Any] = Field(..., description="Structured invoice data complying with EN 16931")
+    profile: Optional[str] = Field("EN 16931", description="ZUGFeRD 2.3 Profile: EN 16931 (COMFORT), BASIC, EXTENDED")
+
+
+class ZUGFeRDExtractRequest(BaseModel):
+    pdf_base64: str = Field(..., description="Base64-encoded ZUGFeRD PDF invoice")
+
+
+class ReceiptOCRRequest(BaseModel):
+    image_base64: str = Field(..., description="Base64-encoded receipt image (JPEG, PNG)")
+    chart: Optional[str] = Field("SKR03", description="Target chart of accounts: SKR03 or SKR04")
+    model: Optional[str] = Field("qwen2.5-vl:3b", description="Multimodal vision model to query")
+
 
 
 class ChatMessage(BaseModel):
@@ -373,6 +392,59 @@ def generate_datev_line(req: DatevBuchungssatzRequest):
     prompt = f"Erzeuge den DATEV-Buchungssatz (EXTF-Zeile) für folgende Ausgabe in {chart}: '{req.receipt_text}'"
     raw = query_ollama([{"role": "user", "content": prompt}], model=req.model)
     return {"chart": chart, "receipt": req.receipt_text, "datev_extf_line": raw.strip()}
+
+
+@app.post("/api/zugferd-generate")
+def generate_zugferd_invoice(req: ZUGFeRDGenerateRequest):
+    """Generates a hybrid ZUGFeRD 2.3 / Factur-X PDF/A-3 electronic invoice with embedded EN 16931 XML."""
+    try:
+        pdf_bytes = create_zugferd_pdf(req.invoice_data, profile=req.profile or "EN 16931")
+        verification = verify_zugferd_pdf(pdf_bytes)
+        return {
+            "status": "success",
+            "invoice_number": req.invoice_data.get("invoice_number", "RE-2025"),
+            "pdf_size_bytes": len(pdf_bytes),
+            "pdf_base64": base64.b64encode(pdf_bytes).decode("utf-8"),
+            "verification": verification
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to generate ZUGFeRD invoice: {e}")
+
+
+@app.post("/api/zugferd-extract")
+def extract_zugferd_invoice(req: ZUGFeRDExtractRequest):
+    """Extracts embedded EN 16931 / Factur-X XML from a hybrid PDF invoice."""
+    try:
+        pdf_bytes = base64.b64decode(req.pdf_base64)
+        xml_content, filename = extract_zugferd_xml(pdf_bytes)
+        if not xml_content:
+            raise HTTPException(status_code=404, detail="No embedded XML found in PDF attachments.")
+        verification = verify_zugferd_pdf(pdf_bytes)
+        return {
+            "status": "success",
+            "attachment_name": filename,
+            "xml_content": xml_content,
+            "verification": verification
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Extraction error: {e}")
+
+
+@app.post("/api/ocr-receipt")
+def ocr_receipt(req: ReceiptOCRRequest):
+    """Multimodal Vision OCR: Extracts receipt data and maps to DATEV accounts and GoBD compliance."""
+    try:
+        img_bytes = base64.b64decode(req.image_base64)
+        result = process_receipt_image(
+            image_input=img_bytes,
+            chart=req.chart or "SKR03",
+            model=req.model or "qwen2.5-vl:3b",
+            ollama_url=OLLAMA_BASE_URL
+        )
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Receipt OCR processing failed: {e}")
+
 
 
 @app.post("/v1/chat/completions")

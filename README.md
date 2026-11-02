@@ -4,9 +4,11 @@
 [![Base Model](https://img.shields.io/badge/Base%20Model-Qwen%202.5%203B%20Instruct-brightgreen.svg)](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct)
 [![Hugging Face](https://img.shields.io/badge/Hugging%20Face-jonprompter%2Frechly--de--3b-yellow.svg)](https://huggingface.co/jonprompter/rechly-de-3b)
 [![Ollama Hub](https://img.shields.io/badge/Ollama%20Hub-jonprompter%2Frechly--de--3b-black.svg)](https://ollama.com/jonprompter/rechly-de-3b)
-[![Benchmark](https://img.shields.io/badge/Benchmark-Grade%20A%2B%20(8%20Domains)-success.svg)](scripts/benchmark_comprehensive.py)
+[![Benchmark](https://img.shields.io/badge/Benchmark-Grade%20A%2B%20(100%25%20Verified)-success.svg)](scripts/benchmark_comprehensive.py)
 [![Colab T4](https://img.shields.io/badge/Colab%20Training-Free%20T4%20GPU%20($0)-orange.svg)](notebooks/rechly_de_3b_training_colab.ipynb)
-[![Test Suite](https://img.shields.io/badge/Tests-98%20Passed-emerald.svg)](tests/)
+[![Test Suite](https://img.shields.io/badge/Tests-115%20Passed-emerald.svg)](tests/)
+[![ZUGFeRD 2.3](https://img.shields.io/badge/E--Rechnung-ZUGFeRD%202.3%20%2F%20XRechnung%203.0-blue.svg)](scripts/zugferd_generator.py)
+[![Receipt OCR](https://img.shields.io/badge/Vision%20OCR-Local%20Receipt%20Pipeline-purple.svg)](scripts/receipt_vision_ocr.py)
 [![DSGVO Compliance](https://img.shields.io/badge/DSGVO%2FGDPR-100%25%20On--Device-blueviolet.svg)](#-specifications--highlights)
 
 **Rechly-DE-3B** is a specialized, lightweight (3 Billion parameters), privacy-first German accounting language model and research toolkit engineered specifically for **[Rechly](https://rechly.de)** and the German open-source AI ecosystem. It operates **100% locally** on Apple Silicon (M1/M2/M3/M4) and standard CPUs, providing complete **DSGVO / GDPR compliance** with zero data leaving your hardware.
@@ -92,12 +94,20 @@ rechly_llm/
 ├── Dockerfile                           # Multi-stage lightweight Dockerfile for API Gateway
 ├── docker-compose.yml                   # 1-click Docker deployment with Ollama
 ├── requirements.txt                     # Dependencies for dataset gen, serving, and training
+├── grammars/                            # Official GBNF formal grammar files
+│   ├── invoice.gbnf                     # Constrains text-to-invoice schema
+│   ├── expense.gbnf                     # Enforces 4-digit DATEV accounts & tax
+│   ├── xrechnung.gbnf                   # EN 16931 / XRechnung 3.0 schema
+│   └── gobd_audit.gbnf                  # GoBD § 14 Abs. 4 audit report schema
 ├── data/
 │   ├── seed_dataset.jsonl               # 25 verified GoBD training seed pairs
-│   ├── rechly_german_accounting.jsonl   # 800 unique, validated GoBD training examples across 5 domains
+│   ├── rechly_german_accounting.jsonl   # 1,280+ unique, validated GoBD training examples
+│   ├── rechly_preference_pairs.jsonl    # 101 precision DPO/ORPO alignment pairs
 │   └── schemas/
 │       ├── invoice_schema.json          # Strict JSON schema for Text-to-Invoice output
-│       └── expense_schema.json          # Strict JSON schema for SKR03/SKR04 output
+│       ├── expense_schema.json          # Strict JSON schema for SKR03/SKR04 output
+│       ├── xrechnung_schema.json        # EN 16931 E-Rechnung JSON schema
+│       └── gobd_audit_schema.json       # GoBD pre-audit report schema
 ├── docs/                                # Documentation and technical guides
 │   ├── MAC_QUICKSTART.md                # Dedicated Apple Silicon Metal guide
 │   ├── TRAINING.md                      # Fine-tuning workflows (MLX, PyTorch, Colab)
@@ -110,6 +120,12 @@ rechly_llm/
 ├── scripts/
 │   ├── rechly_client.py                 # Official typed Python Client SDK for Rechly
 │   ├── cli.py                           # Ergonomic command-line developer utility
+│   ├── zugferd_generator.py             # ZUGFeRD 2.3 / Factur-X PDF/A-3 hybrid generator
+│   ├── receipt_vision_ocr.py            # Multimodal Vision OCR (receipt photo to DATEV)
+│   ├── train_orpo.py                    # Single-stage ORPO preference alignment script
+│   ├── validate_preference_dataset.py   # Preference alignment dataset integrity validator
+│   ├── xrechnung_utils.py               # EN 16931 / XRechnung 3.0 UBL 2.1 XML serialization
+│   ├── datev_utils.py                   # DATEV ASCII / EXTF semicolon format engine
 │   ├── upload_to_hf.py                  # Hugging Face deployment script
 │   ├── dataset_generator_engine.py      # 100% open-source offline dataset generator engine
 │   ├── generate_dataset.py              # Multi-provider synthetic dataset generator (engine/ollama/APIs)
@@ -118,7 +134,7 @@ rechly_llm/
 │   ├── train_hf_mps.py                  # PyTorch + PEFT LoRA training (Apple MPS / CUDA / CPU)
 │   ├── train_unsloth.py                 # QLoRA training script for CUDA / Google Colab
 │   ├── export_gguf.py                   # GGUF verification, adapter merging, and quantization helper
-│   ├── evaluate_model.py                # Automated 5-domain evaluation benchmark (100% score)
+│   ├── benchmark_comprehensive.py       # 57-point comprehensive audit benchmark (100% score)
 │   ├── serve_api.py                     # Local REST API & OpenAI-compatible gateway with Web UI
 │   └── serve_demo.py                    # Lightweight standalone demo server
 └── tests/
@@ -130,7 +146,11 @@ rechly_llm/
     ├── test_api.py                      # Basic FastAPI gateway tests
     ├── test_api_endpoints.py            # Comprehensive integration tests for all REST endpoints
     ├── test_demo.py                     # Standalone demo tests
-    └── test_mlx_workflow.py             # MLX workflow tests
+    ├── test_mlx_workflow.py             # MLX workflow tests
+    ├── test_new_domains.py              # XRechnung, GoBD Audit, DATEV EXTF tests
+    ├── test_zugferd.py                  # ZUGFeRD 2.3 PDF/A-3 generator & extraction tests
+    ├── test_vision_ocr.py               # Multimodal receipt OCR & SKR classification tests
+    └── test_preference_dataset.py       # DPO/ORPO preference dataset tests
 ```
 
 ---
@@ -271,10 +291,39 @@ Access the gateway and playground at `http://localhost:8000`.
 
 ## 🧪 Automated Test Suite
 
-Run the full automated test suite (98 unit and integration tests):
+Run the full automated test suite (115 unit and integration tests):
 ```bash
 pytest tests/ -v
 ```
+
+---
+
+## ⚡ Advanced Capabilities: ZUGFeRD 2.3, Vision OCR & DPO
+
+### 1. ZUGFeRD 2.3 / Factur-X PDF/A-3 Hybrid Invoicing
+Create hybrid electronic invoices with human-readable PDF and embedded EN 16931 XML:
+```python
+from scripts.zugferd_generator import create_zugferd_pdf, extract_zugferd_xml
+
+# Generates PDF/A-3 with embedded factur-x.xml
+pdf_bytes = create_zugferd_pdf(invoice_data)
+
+# Extracts embedded XML from any incoming hybrid invoice
+xml_content, filename = extract_zugferd_xml(pdf_bytes)
+```
+
+### 2. Multimodal Receipt OCR Pipeline
+Extract crumpled paper receipts, restaurant slips (*Bewirtungsbelege*), and fuel receipts directly into DATEV EXTF CSV lines:
+```python
+from scripts.receipt_vision_ocr import process_receipt_image
+
+result = process_receipt_image("receipt_photo.jpg", chart="SKR03")
+print(result["datev_classification"])  # e.g. 4650 (70% deductible)
+print(result["datev_buchungssatz"])     # 90,00;S;EUR;;;;4530;1200;9;1502;...
+```
+
+### 3. DPO / ORPO Preference Alignment
+Includes 101 curated German tax edge cases (`data/rechly_preference_pairs.jsonl`) to penalize tax violations (§ 19, § 13b, § 14 Abs. 4) and train via `scripts/train_orpo.py`.
 
 ---
 

@@ -70,7 +70,16 @@ def deploy(repo_id: str, upload_gguf: bool = True, upload_mlx: bool = True, uplo
                 repo_id=repo_id,
                 repo_type="model",
             )
-    print("   [OK] Model Card, Modelfile, Grammars, and Schemas uploaded.\n")
+    # Upload Preference Dataset
+    pref_file = PROJECT_ROOT / "data" / "rechly_preference_pairs.jsonl"
+    if pref_file.exists():
+        api.upload_file(
+            path_or_fileobj=str(pref_file),
+            path_in_repo="data/rechly_preference_pairs.jsonl",
+            repo_id=repo_id,
+            repo_type="model",
+        )
+    print("   [OK] Model Card, Modelfile, Grammars, Schemas, and Alignment Dataset uploaded.\n")
 
     # 3. Upload Tokenizer & Configs
     mlx_dir = PROJECT_ROOT / "rechly-de-3b-mlx"

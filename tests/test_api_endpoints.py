@@ -185,3 +185,77 @@ def test_datev_buchungssatz_endpoint(mock_query):
     assert data["chart"] == "SKR03"
     assert "datev_extf_line" in data
     assert ";S;EUR;" in data["datev_extf_line"]
+
+
+def test_zugferd_generate_and_extract_endpoints():
+    sample_invoice = {
+        "invoice_number": "RE-API-001",
+        "issue_date": "2025-02-15",
+        "due_date": "2025-03-01",
+        "buyer_reference": "04011000-11223-44",
+        "currency": "EUR",
+        "seller": {
+            "name": "Rechly API Test",
+            "vat_id": "DE123456789",
+            "street": "Testweg 1",
+            "postal_code": "10115",
+            "city": "Berlin",
+            "country_code": "DE"
+        },
+        "buyer": {
+            "name": "Client AG",
+            "vat_id": "DE987654321",
+            "street": "Kundenallee 2",
+            "postal_code": "80331",
+            "city": "München",
+            "country_code": "DE"
+        },
+        "line_items": [
+            {
+                "line_id": "1",
+                "name": "Cloud API Service",
+                "quantity": 1.0,
+                "unit_code": "C62",
+                "unit_price": 500.0,
+                "net_amount": 500.0,
+                "tax_category": "S",
+                "tax_percent": 19
+            }
+        ],
+        "total_net_amount": 500.0,
+        "total_tax_amount": 95.0,
+        "total_gross_amount": 595.0
+    }
+
+    # Test generation
+    res = client.post("/api/zugferd-generate", json={"invoice_data": sample_invoice, "profile": "EN 16931"})
+    assert res.status_code == 200
+    gen_data = res.json()
+    assert gen_data["status"] == "success"
+    assert "pdf_base64" in gen_data
+    assert gen_data["verification"]["is_valid_zugferd"] is True
+
+    # Test extraction
+    res_ext = client.post("/api/zugferd-extract", json={"pdf_base64": gen_data["pdf_base64"]})
+    assert res_ext.status_code == 200
+    ext_data = res_ext.json()
+    assert ext_data["status"] == "success"
+    assert ext_data["attachment_name"] == "factur-x.xml"
+    assert "RE-API-001" in ext_data["xml_content"]
+
+
+def test_ocr_receipt_endpoint():
+    from receipt_vision_ocr import create_sample_receipt_image
+    import base64
+
+    img_bytes = create_sample_receipt_image(merchant="Aral Tankstelle", total="65,00 EUR")
+    img_b64 = base64.b64encode(img_bytes).decode("utf-8")
+
+    res = client.post("/api/ocr-receipt", json={"image_base64": img_b64, "chart": "SKR03"})
+    assert res.status_code == 200
+    data = res.json()
+    assert data["status"] == "success"
+    assert "datev_classification" in data
+    assert "datev_buchungssatz" in data
+    assert ";S;EUR;" in data["datev_buchungssatz"]
+
