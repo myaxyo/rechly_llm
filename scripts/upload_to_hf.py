@@ -36,20 +36,24 @@ def deploy(repo_id: str, upload_gguf: bool = True, upload_mlx: bool = True, uplo
     api.create_repo(repo_id=repo_id, repo_type="model", exist_ok=True)
     print("   [OK] Repository ready.\n")
 
-    # 2. Upload Model Card & Modelfile
-    print("2. Uploading Model Card (README.md), Modelfile, Grammars & Schemas...")
+    # 2. Upload Model Card & Modelfiles
+    print("2. Uploading Model Card (README.md), Modelfiles, Grammars & Schemas...")
     api.upload_file(
         path_or_fileobj=str(PROJECT_ROOT / "MODEL_CARD.md"),
         path_in_repo="README.md",
         repo_id=repo_id,
         repo_type="model",
     )
-    api.upload_file(
-        path_or_fileobj=str(PROJECT_ROOT / "Modelfile"),
-        path_in_repo="Modelfile",
-        repo_id=repo_id,
-        repo_type="model",
-    )
+    for mf_name in ["Modelfile", "Modelfile.1.5b", "Modelfile.0.5b"]:
+        mf_path = PROJECT_ROOT / mf_name
+        if mf_path.exists():
+            print(f"   - Uploading {mf_name}...")
+            api.upload_file(
+                path_or_fileobj=str(mf_path),
+                path_in_repo=mf_name,
+                repo_id=repo_id,
+                repo_type="model",
+            )
     # Upload GBNF Grammars
     grammars_dir = PROJECT_ROOT / "grammars"
     if grammars_dir.exists():
@@ -104,20 +108,26 @@ def deploy(repo_id: str, upload_gguf: bool = True, upload_mlx: bool = True, uplo
                     api.upload_file(path_or_fileobj=str(f), path_in_repo=f"adapters/{f.name}", repo_id=repo_id, repo_type="model")
             print("   [OK] Adapters uploaded.\n")
 
-    # 5. Upload GGUF Quantized Model
+    # 5. Upload GGUF Quantized Models
     if upload_gguf:
-        gguf_path = PROJECT_ROOT / "rechly-de-3b-q4_k_m.gguf"
-        if gguf_path.exists():
-            real_path = os.path.realpath(str(gguf_path))
-            size_mb = os.path.getsize(real_path) / (1024 * 1024)
-            print(f"5. Uploading GGUF binary ({size_mb:.2f} MB)...")
-            api.upload_file(
-                path_or_fileobj=real_path,
-                path_in_repo="rechly-de-3b-q4_k_m.gguf",
-                repo_id=repo_id,
-                repo_type="model",
-            )
-            print("   [OK] GGUF binary uploaded.\n")
+        gguf_candidates = [
+            "rechly-de-3b-q4_k_m.gguf",
+            "rechly-de-1.5b-q4_k_m.gguf",
+            "rechly-de-0.5b-q4_k_m.gguf",
+        ]
+        for gname in gguf_candidates:
+            gpath = PROJECT_ROOT / gname
+            if gpath.exists():
+                real_path = os.path.realpath(str(gpath))
+                size_mb = os.path.getsize(real_path) / (1024 * 1024)
+                print(f"5. Uploading GGUF binary {gname} ({size_mb:.2f} MB)...")
+                api.upload_file(
+                    path_or_fileobj=real_path,
+                    path_in_repo=gname,
+                    repo_id=repo_id,
+                    repo_type="model",
+                )
+                print(f"   [OK] {gname} uploaded.\n")
 
     print("=" * 60)
     print(f"🚀 Deployment Complete! View your model at:")
