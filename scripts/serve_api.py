@@ -23,6 +23,9 @@ from xrechnung_utils import to_xrechnung_ubl_xml
 from datev_utils import format_datev_buchungssatz
 from zugferd_generator import create_zugferd_pdf, extract_zugferd_xml, verify_zugferd_pdf
 from receipt_vision_ocr import process_receipt_image
+from datev_batch_exporter import export_datev_batch_csv, generate_datev_zip_archive, parse_datev_extf_csv
+from xrechnung_validator import audit_en16931_invoice
+from tax_calculator import reconcile_invoice_totals
 import base64
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -119,6 +122,22 @@ class ReceiptOCRRequest(BaseModel):
     image_base64: str = Field(..., description="Base64-encoded receipt image (JPEG, PNG)")
     chart: Optional[str] = Field("SKR03", description="Target chart of accounts: SKR03 or SKR04")
     model: Optional[str] = Field("qwen2.5-vl:3b", description="Multimodal vision model to query")
+
+
+class DatevBatchExportRequest(BaseModel):
+    records: List[Dict[str, Any]] = Field(..., description="List of accounting entries or invoices to export")
+    chart: Optional[str] = Field("SKR03", description="Chart of accounts: SKR03 or SKR04")
+    mandant_nr: Optional[str] = Field("10001", description="DATEV Mandantennummer")
+    berater_nr: Optional[str] = Field("1001", description="DATEV Beraternummer")
+    as_zip: Optional[bool] = Field(False, description="Whether to package output as a DATEV Unternehmen online ZIP archive")
+
+
+class XRechnungValidateRequest(BaseModel):
+    invoice_data: Dict[str, Any] = Field(..., description="Structured invoice data to validate against EN 16931 rules")
+
+
+class ReconcileTotalsRequest(BaseModel):
+    invoice_data: Dict[str, Any] = Field(..., description="Invoice data with line items to reconcile mathematically")
 
 
 
@@ -444,6 +463,64 @@ def ocr_receipt(req: ReceiptOCRRequest):
         return result
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Receipt OCR processing failed: {e}")
+
+
+@app.post("/api/datev-batch-export")
+def datev_batch_export(req: DatevBatchExportRequest):
+    """Generates official DATEV EXTF 700 CSV or Unternehmen online ZIP archive for batch import."""
+    try:
+        if req.as_zip:
+            zip_bytes = generate_datev_zip_archive(
+                records=req.records,
+                chart=req.chart or "SKR03",
+                mandant_nr=req.mandant_nr or "10001",
+                berater_nr=req.berater_nr or "1001"
+            )
+            return {
+                "status": "success",
+                "format": "zip",
+                "file_size_bytes": len(zip_bytes),
+                "zip_base64": base64.b64encode(zip_bytes).decode("utf-8")
+            }
+        else:
+            csv_bytes = export_datev_batch_csv(
+                records=req.records,
+                chart=req.chart or "SKR03",
+                mandant_nr=req.mandant_nr or "10001",
+                berater_nr=req.berater_nr or "1001"
+            )
+            parsed_summary = parse_datev_extf_csv(csv_bytes)
+            return {
+                "status": "success",
+                "format": "csv",
+                "file_size_bytes": len(csv_bytes),
+                "csv_text": csv_bytes.decode("utf-8-sig"),
+                "csv_base64": base64.b64encode(csv_bytes).decode("utf-8"),
+                "summary": parsed_summary
+            }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"DATEV batch export error: {e}")
+
+
+@app.post("/api/xrechnung-validate")
+def validate_en16931(req: XRechnungValidateRequest):
+    """Validates electronic invoice data against official KoSIT EN 16931 / CIUS-XRechnung 3.0 rules."""
+    try:
+        report = audit_en16931_invoice(req.invoice_data)
+        return report
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Validation error: {e}")
+
+
+@app.post("/api/reconcile-totals")
+def reconcile_totals_endpoint(req: ReconcileTotalsRequest):
+    """Guarantees cent-perfect arithmetic and GoBD rounding (§ 35 UStDV) for invoice items."""
+    try:
+        reconciled = reconcile_invoice_totals(req.invoice_data)
+        return reconciled
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Reconciliation error: {e}")
+
 
 
 

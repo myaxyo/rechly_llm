@@ -206,6 +206,28 @@ def match_skr_account_from_receipt(receipt_data: Dict[str, Any]) -> Dict[str, An
             "legal_note": "Laufender Bürobedarf: 100% Betriebsausgabe."
         }
 
+    # GWG Geringwertige Wirtschaftsgüter (< 800€)
+    if any(k in text_corpus for k in ["gwg", "schreibtisch", "bürostuhl", "büromöbel", "monitor", "möbel", "arbeitsplatz"]):
+        return {
+            "category": "Geringwertige Wirtschaftsgüter (GWG bis 800€)",
+            "skr03_account": "0480",
+            "skr04_account": "0670",
+            "vat_rate": 19,
+            "deductible_percent": 100,
+            "legal_note": "Geringwertige Wirtschaftsgüter (GWG) bis 800 € netto: Sofortabschreibung im Anschaffungsjahr gem. § 6 Abs. 2 EStG."
+        }
+
+    # Telekommunikation & Internet
+    if any(k in text_corpus for k in ["telekom", "telefon", "dsl", "internet", "mobilfunk", "vodafone", "o2", "telefonie", "flatrate"]):
+        return {
+            "category": "Telekommunikation und Internet",
+            "skr03_account": "4920",
+            "skr04_account": "6805",
+            "vat_rate": 19,
+            "deductible_percent": 100,
+            "legal_note": "Laufende betriebliche Telekommunikation und Internetanschlüsse: 100% Betriebsausgabe."
+        }
+
     # Default / Allgemein
     return {
         "category": "Sonstige betriebliche Aufwendungen",

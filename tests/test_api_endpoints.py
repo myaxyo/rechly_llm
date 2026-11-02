@@ -259,3 +259,54 @@ def test_ocr_receipt_endpoint():
     assert "datev_buchungssatz" in data
     assert ";S;EUR;" in data["datev_buchungssatz"]
 
+
+def test_datev_batch_export_endpoint():
+    records = [
+        {"merchant_name": "Google", "gross_amount": 100.0, "vat_rate": 19.0, "konto": "4964", "soll_haben": "S"},
+        {"merchant_name": "Kunde AG", "gross_amount": 500.0, "vat_rate": 19.0, "konto": "8400", "soll_haben": "H", "is_sales": True}
+    ]
+    res = client.post("/api/datev-batch-export", json={"records": records, "chart": "SKR03"})
+    assert res.status_code == 200
+    data = res.json()
+    assert data["status"] == "success"
+    assert "csv_text" in data
+    assert data["summary"]["total_records"] == 2
+    assert "4964" in data["csv_text"]
+
+
+def test_xrechnung_validate_endpoint():
+    invoice = {
+        "invoice_number": "RE-VALIDATE-01",
+        "issue_date": "2025-03-01",
+        "buyer_reference": "04011000-12345-67",
+        "currency": "EUR",
+        "seller": {"name": "Vendor GmbH", "postal_code": "10115", "city": "Berlin"},
+        "buyer": {"name": "Client", "city": "München"},
+        "line_items": [{"name": "Item 1", "quantity": 1, "unit_price": 100.0, "net_amount": 100.0, "tax_category": "S"}],
+        "total_net_amount": 100.0,
+        "total_tax_amount": 19.0,
+        "total_gross_amount": 119.0
+    }
+    res = client.post("/api/xrechnung-validate", json={"invoice_data": invoice})
+    assert res.status_code == 200
+    data = res.json()
+    assert data["is_compliant"] is True
+    assert data["rules_passed"] >= 8
+
+
+def test_reconcile_totals_endpoint():
+    raw_inv = {
+        "invoice_number": "RE-REC-01",
+        "line_items": [
+            {"name": "Item A", "quantity": 2, "unit_price": 50.0, "tax_percent": 19.0},
+            {"name": "Item B", "quantity": 1, "unit_price": 70.0, "tax_percent": 7.0}
+        ]
+    }
+    res = client.post("/api/reconcile-totals", json={"invoice_data": raw_inv})
+    assert res.status_code == 200
+    data = res.json()
+    assert data["total_net_amount"] == 170.0
+    assert data["total_tax_amount"] == 23.90  # 19.00 + 4.90
+    assert data["total_gross_amount"] == 193.90
+
+

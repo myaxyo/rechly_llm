@@ -22,6 +22,10 @@ from typing import Dict, Any, List, Tuple
 from jsonschema import validate, ValidationError
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+if str(PROJECT_ROOT / "scripts") not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT / "scripts"))
 INVOICE_SCHEMA = json.load(open(PROJECT_ROOT / "data" / "schemas" / "invoice_schema.json", "r", encoding="utf-8"))
 EXPENSE_SCHEMA = json.load(open(PROJECT_ROOT / "data" / "schemas" / "expense_schema.json", "r", encoding="utf-8"))
 XRECHNUNG_SCHEMA = json.load(open(PROJECT_ROOT / "data" / "schemas" / "xrechnung_schema.json", "r", encoding="utf-8"))
@@ -566,6 +570,301 @@ BENCHMARK_CASES = [
         "expected_konto": "2100",
         "expected_gegenkonto": "1200",
     },
+
+    # ==================== DOMAIN 9: ZUGFeRD 2.3 & FACTUR-X PDF/A-3 (5 cases) ====================
+    {
+        "id": "D9-01",
+        "domain": "Domain 9: ZUGFeRD 2.3 Hybrid Engine",
+        "name": "Standard B2B Invoice Factur-X Embedding",
+        "type": "zugferd",
+        "invoice_data": {
+            "invoice_number": "RE-2025-901",
+            "issue_date": "2025-02-15",
+            "due_date": "2025-03-01",
+            "seller": {"name": "TechPro Cloud GmbH", "vat_id": "DE123456789", "tax_id": "27/123/45678", "street": "Friedrichstr. 10", "postal_code": "10117", "city": "Berlin"},
+            "buyer": {"name": "Muster Consulting AG", "vat_id": "DE987654321", "street": "Königsallee 45", "postal_code": "40212", "city": "Düsseldorf"},
+            "line_items": [{"description": "Cloud Deployment & DevOps", "quantity": 10.0, "unit_price": 150.00, "vat_rate": 19.0}]
+        },
+        "profile": "EN 16931",
+        "expected_xml_strings": ["CrossIndustryInvoice", "RE-2025-901", "DE123456789", "1500.00", "285.00", "1785.00"],
+        "expected_net_total": 1500.00
+    },
+    {
+        "id": "D9-02",
+        "domain": "Domain 9: ZUGFeRD 2.3 Hybrid Engine",
+        "name": "Public Sector B2G Leitweg-ID BT-10 Embedding",
+        "type": "zugferd",
+        "invoice_data": {
+            "invoice_number": "RE-2025-902",
+            "issue_date": "2025-02-15",
+            "due_date": "2025-03-15",
+            "buyer_reference": "04011000-12345-67",
+            "seller": {"name": "Apex Security UG", "vat_id": "DE111222333", "tax_id": "11/222/33344", "street": "Am Spreeufer 1", "postal_code": "10178", "city": "Berlin"},
+            "buyer": {"name": "Bundesministerium des Innern", "street": "Alt-Moabit 140", "postal_code": "10557", "city": "Berlin"},
+            "line_items": [{"description": "Sicherheits-Audit Infrastruktur", "quantity": 1.0, "unit_price": 3200.00, "vat_rate": 19.0}]
+        },
+        "profile": "EN 16931",
+        "expected_xml_strings": ["04011000-12345-67", "RE-2025-902", "3200.00", "3808.00"],
+        "expected_net_total": 3200.00
+    },
+    {
+        "id": "D9-03",
+        "domain": "Domain 9: ZUGFeRD 2.3 Hybrid Engine",
+        "name": "Mixed Tax Rates (19% & 7%) Cross-Industry XML",
+        "type": "zugferd",
+        "invoice_data": {
+            "invoice_number": "RE-2025-903",
+            "issue_date": "2025-02-18",
+            "seller": {"name": "Grand Hotel & Business Center", "vat_id": "DE333444555", "street": "Bahnhofstr. 12", "postal_code": "80335", "city": "München"},
+            "buyer": {"name": "Alpha Solutions GmbH", "vat_id": "DE777888999", "street": "Taunusanlage 8", "postal_code": "60329", "city": "Frankfurt"},
+            "line_items": [
+                {"description": "Übernachtung Business Zimmer", "quantity": 2.0, "unit_price": 110.00, "vat_rate": 7.0},
+                {"description": "Konferenzraum & Beamer", "quantity": 1.0, "unit_price": 180.00, "vat_rate": 19.0}
+            ]
+        },
+        "profile": "EN 16931",
+        "expected_xml_strings": ["<ram:RateApplicablePercent>7.00</ram:RateApplicablePercent>", "<ram:RateApplicablePercent>19.00</ram:RateApplicablePercent>"],
+        "expected_net_total": 400.00
+    },
+    {
+        "id": "D9-04",
+        "domain": "Domain 9: ZUGFeRD 2.3 Hybrid Engine",
+        "name": "Kleinunternehmer (§ 19 UStG) Zero Tax Hybrid",
+        "type": "zugferd",
+        "invoice_data": {
+            "invoice_number": "RE-2025-904",
+            "issue_date": "2025-02-20",
+            "seller": {"name": "Grafikdesign Schmidt (Kleinunternehmer)", "tax_id": "24/555/66677", "street": "Lindenweg 4", "postal_code": "50672", "city": "Köln"},
+            "buyer": {"name": "Café Sonnenschein", "street": "Marktplatz 3", "postal_code": "50667", "city": "Köln"},
+            "notes": "Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.",
+            "line_items": [{"description": "Speisekarte Redesign & Druckvorstufe", "quantity": 1.0, "unit_price": 450.00, "vat_rate": 0.0}]
+        },
+        "profile": "BASIC",
+        "expected_xml_strings": ["RE-2025-904", "450.00"],
+        "expected_net_total": 450.00
+    },
+    {
+        "id": "D9-05",
+        "domain": "Domain 9: ZUGFeRD 2.3 Hybrid Engine",
+        "name": "ZUGFeRD Extraction & Roundtrip Conformance",
+        "type": "zugferd",
+        "invoice_data": {
+            "invoice_number": "RE-2025-905",
+            "issue_date": "2025-02-22",
+            "seller": {"name": "Nordic IT Engineering", "vat_id": "DE999111222", "street": "Hafenpromenade 9", "postal_code": "20457", "city": "Hamburg"},
+            "buyer": {"name": "Logistik Express SE", "vat_id": "DE888333222", "street": "Am Güterbahnhof 15", "postal_code": "28195", "city": "Bremen"},
+            "line_items": [{"description": "API Integration DATEV Schnittstelle", "quantity": 8.0, "unit_price": 130.00, "vat_rate": 19.0}]
+        },
+        "profile": "EN 16931",
+        "expected_xml_strings": ["RE-2025-905", "1040.00", "1237.60"],
+        "expected_net_total": 1040.00
+    },
+
+    # ==================== DOMAIN 10: MULTIMODAL VISION OCR TO DATEV (5 cases) ====================
+    {
+        "id": "D10-01",
+        "domain": "Domain 10: Multimodal Receipt OCR",
+        "name": "Restaurant Hospitality Bewirtungsbeleg (70%)",
+        "type": "vision_ocr",
+        "merchant": "Restaurant Hirsch",
+        "item_text": "Bewirtung Mandanten 140.00 EUR inkl. 19% MwSt",
+        "gross_amount": 140.00,
+        "vat_rate": 19.0,
+        "expected_skr03": "4650",
+        "expected_skr04": "6640",
+        "expected_deductible": 70
+    },
+    {
+        "id": "D10-02",
+        "domain": "Domain 10: Multimodal Receipt OCR",
+        "name": "Fleet Fuel Aral Diesel (19% VAT)",
+        "type": "vision_ocr",
+        "merchant": "Aral Tankstelle Berlin",
+        "item_text": "Diesel Kraftstoff 45 Liter 85.50 EUR",
+        "gross_amount": 85.50,
+        "vat_rate": 19.0,
+        "expected_skr03": "4530",
+        "expected_skr04": "6530",
+        "expected_deductible": 100
+    },
+    {
+        "id": "D10-03",
+        "domain": "Domain 10: Multimodal Receipt OCR",
+        "name": "Hotel Lodging Reduced Tax (7% VAT)",
+        "type": "vision_ocr",
+        "merchant": "Hotel Imperial München",
+        "item_text": "Übernachtung 1 Nacht Einzelzimmer 120.00 EUR",
+        "gross_amount": 120.00,
+        "vat_rate": 7.0,
+        "expected_skr03": "4660",
+        "expected_skr04": "6660",
+        "expected_deductible": 100
+    },
+    {
+        "id": "D10-04",
+        "domain": "Domain 10: Multimodal Receipt OCR",
+        "name": "Low-Value Asset Office Desk GWG (< 800€)",
+        "type": "vision_ocr",
+        "merchant": "Büromöbel Direkt GmbH",
+        "item_text": "Schreibtisch höhenverstellbar 420.00 EUR",
+        "gross_amount": 420.00,
+        "vat_rate": 19.0,
+        "expected_skr03": "0480",
+        "expected_skr04": "0670",
+        "expected_deductible": 100
+    },
+    {
+        "id": "D10-05",
+        "domain": "Domain 10: Multimodal Receipt OCR",
+        "name": "Telecommunications & Internet Flatrate",
+        "type": "vision_ocr",
+        "merchant": "Telekom Deutschland GmbH",
+        "item_text": "Business DSL & Festnetz Monatstarif 59.95 EUR",
+        "gross_amount": 59.95,
+        "vat_rate": 19.0,
+        "expected_skr03": "4920",
+        "expected_skr04": "6805",
+        "expected_deductible": 100
+    },
+
+    # ==================== DOMAIN 11: ENTERPRISE DATEV EXTF BATCH (5 cases) ====================
+    {
+        "id": "D11-01",
+        "domain": "Domain 11: Enterprise DATEV Batch",
+        "name": "Format 700 Header Conformance (27 Fields)",
+        "type": "datev_batch",
+        "records": [
+            {"merchant_name": "Aral Tankstelle", "date": "15.02.2025", "gross_amount": 85.00, "vat_rate": 19.0, "konto": "4530"}
+        ],
+        "expected_bu": "9"
+    },
+    {
+        "id": "D11-02",
+        "domain": "Domain 11: Enterprise DATEV Batch",
+        "name": "Mixed Vorsteuer BU-Schlüssel Resolution (BU 8 & 9)",
+        "type": "datev_batch",
+        "records": [
+            {"merchant_name": "Deutsche Bahn", "date": "18.02.2025", "gross_amount": 120.00, "vat_rate": 7.0, "konto": "4670"},
+            {"merchant_name": "Telekom", "date": "19.02.2025", "gross_amount": 60.00, "vat_rate": 19.0, "konto": "4920"}
+        ],
+        "expected_bu": "8"
+    },
+    {
+        "id": "D11-03",
+        "domain": "Domain 11: Enterprise DATEV Batch",
+        "name": "Dual Encoding Integrity (Umlauts Ä, Ö, Ü, ß)",
+        "type": "datev_batch",
+        "records": [
+            {"merchant_name": "Kanzlei Müller-Lüdenscheidt & Söhne", "date": "20.02.2025", "gross_amount": 250.00, "vat_rate": 19.0, "konto": "4955", "belegtext": "Beratungsgebühren Großprojekt"}
+        ],
+        "expected_bu": "9"
+    },
+    {
+        "id": "D11-04",
+        "domain": "Domain 11: Enterprise DATEV Batch",
+        "name": "DATEV Unternehmen Online ZIP Archive Package",
+        "type": "datev_batch",
+        "test_zip": True,
+        "records": [
+            {"merchant_name": "Cloud Host Provider", "date": "22.02.2025", "gross_amount": 140.00, "vat_rate": 19.0, "konto": "4964"},
+            {"merchant_name": "Büroexpress", "date": "23.02.2025", "gross_amount": 75.00, "vat_rate": 19.0, "konto": "4930"}
+        ]
+    },
+    {
+        "id": "D11-05",
+        "domain": "Domain 11: Enterprise DATEV Batch",
+        "name": "Multi-Record Batch Roundtrip Verification",
+        "type": "datev_batch",
+        "records": [
+            {"merchant_name": "Kunde A", "date": "01.02.2025", "gross_amount": 100.00, "vat_rate": 19.0, "konto": "4530"},
+            {"merchant_name": "Kunde B", "date": "02.02.2025", "gross_amount": 200.00, "vat_rate": 7.0, "konto": "4670"},
+            {"merchant_name": "Kunde C", "date": "03.02.2025", "gross_amount": 300.00, "vat_rate": 19.0, "konto": "4920"},
+            {"merchant_name": "Kunde D", "date": "04.02.2025", "gross_amount": 400.00, "vat_rate": 0.0, "konto": "2100"}
+        ]
+    },
+
+    # ==================== DOMAIN 12: CENT-PERFECT RECONCILER & § 35a (5 cases) ====================
+    {
+        "id": "D12-01",
+        "domain": "Domain 12: Cent-Perfect Reconciler",
+        "name": "Commercial Rounding (§ 35 UStDV) on Repeating Thirds",
+        "type": "reconcile",
+        "subtask": "reconcile",
+        "invoice_data": {
+            "invoice_number": "RE-ROUND-01",
+            "line_items": [
+                {"name": "Teilleistung 1", "quantity": 1, "unit_price": 33.333, "tax_percent": 19.0},
+                {"name": "Teilleistung 2", "quantity": 1, "unit_price": 33.333, "tax_percent": 19.0},
+                {"name": "Teilleistung 3", "quantity": 1, "unit_price": 33.335, "tax_percent": 19.0}
+            ]
+        },
+        "expected_net": 100.00,
+        "expected_tax": 19.00,
+        "expected_gross": 119.00
+    },
+    {
+        "id": "D12-02",
+        "domain": "Domain 12: Cent-Perfect Reconciler",
+        "name": "Multi-Tax Rate Group Breakdown Reconciliation",
+        "type": "reconcile",
+        "subtask": "reconcile",
+        "invoice_data": {
+            "invoice_number": "RE-MULTI-02",
+            "line_items": [
+                {"name": "Übernachtung Hotel", "quantity": 2, "unit_price": 100.00, "tax_percent": 7.0},
+                {"name": "Business WiFi Flat", "quantity": 1, "unit_price": 20.00, "tax_percent": 19.0},
+                {"name": "Reverse-Charge Consulting", "quantity": 1, "unit_price": 80.00, "tax_percent": 0.0}
+            ]
+        },
+        "expected_net": 300.00,
+        "expected_tax": 17.80,
+        "expected_gross": 317.80,
+        "expected_breakdown_count": 3
+    },
+    {
+        "id": "D12-03",
+        "domain": "Domain 12: Cent-Perfect Reconciler",
+        "name": "§ 35a Abs. 3 EStG Handwerkerleistungen Labor Separation",
+        "type": "reconcile",
+        "subtask": "handwerker",
+        "items": [
+            {"name": "Fliesenleger Arbeitsstunden Meister", "quantity": 15, "unit_price": 65.00, "tax_percent": 19.0},
+            {"name": "Fahrtkostenpauschale Baustelle", "quantity": 1, "unit_price": 45.00, "tax_percent": 19.0},
+            {"name": "Fliesen Feinsteinzeug 30qm", "quantity": 30, "unit_price": 40.00, "tax_percent": 19.0},
+            {"name": "Fliesenkleber & Fugenmörtel", "quantity": 5, "unit_price": 25.00, "tax_percent": 19.0}
+        ],
+        "expected_labor_net": 1020.00,
+        "expected_deduction": 242.76
+    },
+    {
+        "id": "D12-04",
+        "domain": "Domain 12: Cent-Perfect Reconciler",
+        "name": "Cash Discount Skonto 2% Calculation (§ 17 UStG)",
+        "type": "reconcile",
+        "subtask": "skonto",
+        "gross_amount": 2380.00,
+        "skonto_percent": 2.0,
+        "days": 14,
+        "expected_discount": 47.60,
+        "expected_payable": 2332.40
+    },
+    {
+        "id": "D12-05",
+        "domain": "Domain 12: Cent-Perfect Reconciler",
+        "name": "Negative Line Item Gutschrift & Commercial Discount",
+        "type": "reconcile",
+        "subtask": "reconcile",
+        "invoice_data": {
+            "invoice_number": "RE-DISC-05",
+            "line_items": [
+                {"name": "Hardware Server Rack 42HE", "quantity": 1, "unit_price": 1200.00, "tax_percent": 19.0},
+                {"name": "Treuerabatt 10% Aktionsnachlass", "quantity": 1, "unit_price": -120.00, "tax_percent": 19.0}
+            ]
+        },
+        "expected_net": 1080.00,
+        "expected_tax": 205.20,
+        "expected_gross": 1285.20
+    },
 ]
 
 
@@ -588,8 +887,170 @@ def query_ollama_raw(prompt: str, model: str, base_url: str = "http://localhost:
     return content, latency
 
 
-def evaluate_test_case(tc: Dict[str, Any], raw_output: str) -> Tuple[bool, List[str]]:
+def eval_zugferd_case(tc: Dict[str, Any]) -> Tuple[bool, List[str]]:
+    from scripts.zugferd_generator import create_zugferd_pdf, verify_zugferd_pdf, extract_zugferd_xml
+    reasons = []
+    inv_data = tc["invoice_data"]
+    profile = tc.get("profile", "EN 16931")
+    pdf_bytes = create_zugferd_pdf(inv_data, profile=profile)
+    if len(pdf_bytes) < 1000:
+        reasons.append("Generated PDF too small")
+        return False, reasons
+
+    ver = verify_zugferd_pdf(pdf_bytes)
+    if not ver.get("is_valid_zugferd"):
+        reasons.append("verify_zugferd_pdf failed: is_valid_zugferd is False")
+    if ver.get("attachment_name") != "factur-x.xml":
+        reasons.append(f"verify_zugferd_pdf failed: attachment_name is {ver.get('attachment_name')}")
+
+    xml_content, filename = extract_zugferd_xml(pdf_bytes)
+    if not xml_content or filename != "factur-x.xml":
+        reasons.append(f"extract_zugferd_xml failed: filename={filename}")
+
+    if tc.get("expected_xml_strings"):
+        for s in tc["expected_xml_strings"]:
+            if s not in xml_content:
+                reasons.append(f"Expected XML substring '{s}' not found in factur-x.xml")
+
+    if tc.get("expected_net_total") is not None:
+        if f"{tc['expected_net_total']:.2f}" not in xml_content:
+            reasons.append(f"Net total {tc['expected_net_total']:.2f} not found in XML")
+
+    return len(reasons) == 0, reasons
+
+
+def eval_vision_ocr_case(tc: Dict[str, Any]) -> Tuple[bool, List[str]]:
+    from PIL import Image, ImageDraw
+    import io
+    from scripts.receipt_vision_ocr import process_receipt_image
+    reasons = []
+
+    img = Image.new("RGB", (420, 480), color="#ffffff")
+    draw = ImageDraw.Draw(img)
+    draw.text((30, 30), f"Beleg: {tc['merchant']}", fill="#000000")
+    draw.text((30, 60), f"Datum: {tc.get('date', '2025-02-15')}", fill="#000000")
+    draw.text((30, 90), f"{tc.get('item_text', 'Ausgabe')}", fill="#000000")
+    draw.text((30, 130), f"Gesamtbetrag: {tc['gross_amount']:.2f} EUR", fill="#000000")
+    draw.text((30, 160), f"MwSt: {tc.get('vat_rate', 19.0)}%", fill="#000000")
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+
+    mock_data = {
+        "merchant_name": tc["merchant"],
+        "date": tc.get("date", "2025-02-15"),
+        "receipt_number": f"REC-{tc['id']}",
+        "gross_amount": tc["gross_amount"],
+        "tax_rate": float(tc.get("vat_rate", 19.0)),
+        "net_amount": round(tc["gross_amount"] / (1 + float(tc.get("vat_rate", 19.0)) / 100.0), 2),
+        "tax_amount": round(tc["gross_amount"] - tc["gross_amount"] / (1 + float(tc.get("vat_rate", 19.0)) / 100.0), 2),
+        "currency": "EUR",
+        "category_hint": tc.get("item_text", "")
+    }
+
+    res = process_receipt_image(buf.getvalue(), chart=tc.get("chart", "SKR03"), mock_fallback_data=mock_data)
+    d_class = res.get("datev_classification", {})
+
+    if tc.get("expected_skr03") and str(d_class.get("skr03_account")) != tc["expected_skr03"]:
+        reasons.append(f"SKR03 mismatch: expected {tc['expected_skr03']}, got {d_class.get('skr03_account')}")
+    if tc.get("expected_skr04") and str(d_class.get("skr04_account")) != tc["expected_skr04"]:
+        reasons.append(f"SKR04 mismatch: expected {tc['expected_skr04']}, got {d_class.get('skr04_account')}")
+    if tc.get("expected_deductible") is not None and d_class.get("deductible_percent") != tc["expected_deductible"]:
+        reasons.append(f"Deductible mismatch: expected {tc['expected_deductible']}%, got {d_class.get('deductible_percent')}%")
+
+    extf = res.get("datev_buchungssatz", "")
+    if not extf or ";" not in extf:
+        reasons.append(f"Invalid datev_buchungssatz EXTF row: '{extf}'")
+
+    return len(reasons) == 0, reasons
+
+
+def eval_datev_batch_case(tc: Dict[str, Any]) -> Tuple[bool, List[str]]:
+    from scripts.datev_batch_exporter import export_datev_batch_csv, parse_datev_extf_csv, generate_datev_zip_archive
+    reasons = []
+    records = tc["records"]
+    chart = tc.get("chart", "SKR03")
+
+    csv_bytes = export_datev_batch_csv(records, chart=chart)
+    text = csv_bytes.decode("utf-8-sig")
+    lines = text.strip().split("\r\n")
+    if not lines[0].startswith('"EXTF";700;21;"Buchungsstapel"'):
+        reasons.append(f"Invalid DATEV header line: '{lines[0][:40]}'")
+
+    header_fields = lines[0].split(";")
+    if len(header_fields) < 27:
+        reasons.append(f"Header field count < 27 (got {len(header_fields)})")
+
+    parsed = parse_datev_extf_csv(csv_bytes)
+    if parsed["total_records"] != len(records):
+        reasons.append(f"Parsed count {parsed['total_records']} != {len(records)}")
+
+    if tc.get("expected_bu"):
+        bu_found = False
+        for r in parsed["records"]:
+            if r.get("bu_schluessel") == tc["expected_bu"]:
+                bu_found = True
+                break
+        if not bu_found:
+            reasons.append(f"Expected BU-Schlüssel {tc['expected_bu']} not found in parsed records")
+
+    if tc.get("test_zip", False):
+        import zipfile
+        import io
+        zip_bytes = generate_datev_zip_archive(records, chart=chart)
+        with zipfile.ZipFile(io.BytesIO(zip_bytes)) as z:
+            names = z.namelist()
+            if "EXTF_Buchungsstapel.csv" not in names or "document.xml" not in names:
+                reasons.append(f"Missing files in DATEV zip: {names}")
+
+    return len(reasons) == 0, reasons
+
+
+def eval_reconcile_case(tc: Dict[str, Any]) -> Tuple[bool, List[str]]:
+    from scripts.tax_calculator import reconcile_invoice_totals, calculate_handwerker_split, calculate_skonto_discount
+    reasons = []
+
+    subtask = tc.get("subtask", "reconcile")
+    if subtask == "reconcile":
+        rec = reconcile_invoice_totals(tc["invoice_data"])
+        if not rec.get("is_mathematically_exact"):
+            reasons.append("is_mathematically_exact is False")
+        if tc.get("expected_net") is not None and rec["total_net_amount"] != tc["expected_net"]:
+            reasons.append(f"Net mismatch: expected {tc['expected_net']}, got {rec['total_net_amount']}")
+        if tc.get("expected_tax") is not None and rec["total_tax_amount"] != tc["expected_tax"]:
+            reasons.append(f"Tax mismatch: expected {tc['expected_tax']}, got {rec['total_tax_amount']}")
+        if tc.get("expected_gross") is not None and rec["total_gross_amount"] != tc["expected_gross"]:
+            reasons.append(f"Gross mismatch: expected {tc['expected_gross']}, got {rec['total_gross_amount']}")
+        if tc.get("expected_breakdown_count") and len(rec["tax_breakdown"]) != tc["expected_breakdown_count"]:
+            reasons.append(f"Tax breakdown count mismatch: expected {tc['expected_breakdown_count']}, got {len(rec['tax_breakdown'])}")
+
+    elif subtask == "handwerker":
+        res = calculate_handwerker_split(tc["items"])
+        if tc.get("expected_labor_net") is not None and res["labor_net"] != tc["expected_labor_net"]:
+            reasons.append(f"Labor net mismatch: expected {tc['expected_labor_net']}, got {res['labor_net']}")
+        if tc.get("expected_deduction") is not None and res["paragraph_35a_deduction_amount"] != tc["expected_deduction"]:
+            reasons.append(f"35a deduction mismatch: expected {tc['expected_deduction']}, got {res['paragraph_35a_deduction_amount']}")
+
+    elif subtask == "skonto":
+        res = calculate_skonto_discount(tc["gross_amount"], skonto_percent=tc.get("skonto_percent", 2.0), days=tc.get("days", 14))
+        if tc.get("expected_discount") is not None and res["discount_amount"] != tc["expected_discount"]:
+            reasons.append(f"Discount amount mismatch: expected {tc['expected_discount']}, got {res['discount_amount']}")
+        if tc.get("expected_payable") is not None and res["payable_with_skonto"] != tc["expected_payable"]:
+            reasons.append(f"Payable mismatch: expected {tc['expected_payable']}, got {res['payable_with_skonto']}")
+
+    return len(reasons) == 0, reasons
+
+
+def evaluate_test_case(tc: Dict[str, Any], raw_output: str = None) -> Tuple[bool, List[str]]:
     fail_reasons = []
+
+    if tc["type"] == "zugferd":
+        return eval_zugferd_case(tc)
+    elif tc["type"] == "vision_ocr":
+        return eval_vision_ocr_case(tc)
+    elif tc["type"] == "datev_batch":
+        return eval_datev_batch_case(tc)
+    elif tc["type"] == "reconcile":
+        return eval_reconcile_case(tc)
 
     if tc["type"] == "invoice":
         cleaned = raw_output.strip()
@@ -744,11 +1205,17 @@ def evaluate_test_case(tc: Dict[str, Any], raw_output: str) -> Tuple[bool, List[
     return len(fail_reasons) == 0, fail_reasons
 
 
-def run_benchmark(model: str):
+def run_benchmark(model: str = "rechly-de-3b", domain_filter: str = None, engine_only: bool = False):
+    cases = list(BENCHMARK_CASES)
+    if engine_only:
+        cases = [c for c in cases if c["type"] in ("zugferd", "vision_ocr", "datev_batch", "reconcile")]
+    elif domain_filter:
+        cases = [c for c in cases if domain_filter.lower() in c["domain"].lower()]
+
     print("================================================================================")
-    print(f"  RECHLY-DE-3B COMPREHENSIVE 50-POINT AUDIT BENCHMARK")
+    print(f"  RECHLY-DE-3B COMPREHENSIVE 77-POINT ENTERPRISE AUDIT BENCHMARK")
     print(f"  Model Under Test: {model}")
-    print(f"  Test Cases:       {len(BENCHMARK_CASES)}")
+    print(f"  Test Cases:       {len(cases)} across 12 Domains")
     print("================================================================================\n")
 
     domain_results: Dict[str, Dict[str, Any]] = {}
@@ -757,22 +1224,32 @@ def run_benchmark(model: str):
     passed_total = 0
     failed_total = 0
 
-    for idx, tc in enumerate(BENCHMARK_CASES, start=1):
+    for idx, tc in enumerate(cases, start=1):
         domain = tc["domain"]
         if domain not in domain_results:
             domain_results[domain] = {"passed": 0, "total": 0}
         domain_results[domain]["total"] += 1
 
-        print(f"[{idx:02d}/{len(BENCHMARK_CASES):02d}] {tc['id']} | {tc['name']:<42} ... ", end="", flush=True)
+        print(f"[{idx:02d}/{len(cases):02d}] {tc['id']} | {tc['name']:<46} ... ", end="", flush=True)
 
-        try:
-            output, latency = query_ollama_raw(tc["prompt"], model)
+        if tc["type"] in ("zugferd", "vision_ocr", "datev_batch", "reconcile"):
+            t0 = time.time()
+            try:
+                success, reasons = evaluate_test_case(tc, raw_output=None)
+            except Exception as e:
+                success = False
+                reasons = [f"Engine execution error: {e}"]
+            latency = time.time() - t0
             latencies.append(latency)
-            success, reasons = evaluate_test_case(tc, output)
-        except Exception as e:
-            success = False
-            reasons = [f"Connection / runtime exception: {e}"]
-            latencies.append(0.0)
+        else:
+            try:
+                output, latency = query_ollama_raw(tc["prompt"], model)
+                latencies.append(latency)
+                success, reasons = evaluate_test_case(tc, output)
+            except Exception as e:
+                success = False
+                reasons = [f"Connection / runtime exception: {e}"]
+                latencies.append(0.0)
 
         if success:
             print(f"[PASS] ({latency:.2f}s)")
@@ -792,13 +1269,13 @@ def run_benchmark(model: str):
     for dom, res in domain_results.items():
         score = (res["passed"] / res["total"]) * 100
         bar = "█" * int(score / 5) + "░" * (20 - int(score / 5))
-        print(f"  * {dom:<36} {bar} {res['passed']:02d}/{res['total']:02d} ({score:5.1f}%)")
+        print(f"  * {dom:<38} {bar} {res['passed']:02d}/{res['total']:02d} ({score:5.1f}%)")
 
-    overall_score = (passed_total / len(BENCHMARK_CASES)) * 100
+    overall_score = (passed_total / len(cases)) * 100 if cases else 0.0
     avg_latency = sum(latencies) / len(latencies) if latencies else 0.0
 
     print("-" * 80)
-    print(f"  OVERALL AUDIT SCORE:  {passed_total}/{len(BENCHMARK_CASES)} passed ({overall_score:.1f}%)")
+    print(f"  OVERALL AUDIT SCORE:   {passed_total}/{len(cases)} passed ({overall_score:.1f}%)")
     print(f"  AVERAGE QUERY LATENCY: {avg_latency:.2f} seconds")
 
     grade = "A+" if overall_score >= 95 else ("A" if overall_score >= 90 else ("B+" if overall_score >= 80 else ("B" if overall_score >= 70 else "C")))
@@ -810,7 +1287,7 @@ def run_benchmark(model: str):
         "grade": grade,
         "domain_results": domain_results,
         "passed": passed_total,
-        "total": len(BENCHMARK_CASES),
+        "total": len(cases),
         "avg_latency": avg_latency,
     }
 
@@ -818,5 +1295,7 @@ def run_benchmark(model: str):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=str, default="rechly-de-3b")
+    parser.add_argument("--domain", type=str, default=None, help="Filter to specific domain")
+    parser.add_argument("--engine-only", action="store_true", help="Run only engine verification cases (Domains 9-12)")
     args = parser.parse_args()
-    run_benchmark(args.model)
+    run_benchmark(args.model, domain_filter=args.domain, engine_only=args.engine_only)

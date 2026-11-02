@@ -617,6 +617,18 @@
       <button class="tab-btn" onclick="switchTab('tab-skr')">
         <span>📊</span> 5. DATEV SKR03 / SKR04
       </button>
+      <button class="tab-btn" onclick="switchTab('tab-erechnung')">
+        <span>📑</span> 6. E-Rechnung &amp; ZUGFeRD 2.3
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-ocr')">
+        <span>📸</span> 7. Beleg-Scan &amp; Vision OCR
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-datev-batch')">
+        <span>📦</span> 8. DATEV EXTF Stapel-Export
+      </button>
+      <button class="tab-btn" onclick="switchTab('tab-audit')">
+        <span>🛡️</span> 9. GoBD § 14 Pre-Audit
+      </button>
     </div>
 
     <!-- TAB 1: Text to Invoice -->
@@ -873,6 +885,145 @@
       </div>
     </div>
 
+    <!-- TAB 6: E-Rechnung & ZUGFeRD 2.3 -->
+    <div id="tab-erechnung" class="playground-grid tab-content" style="display:none;">
+      <div class="glass-card">
+        <div class="card-header">
+          <h3 class="card-title"><span>📑</span> EN 16931 &amp; ZUGFeRD 2.3 Generator</h3>
+          <span class="tag-badge">POST /api/zugferd-generate</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">E-Rechnung Leistungsdaten &amp; Leitweg-ID (BT-10):</label>
+          <textarea id="erechnungPrompt" placeholder="z.B. XRechnung an Bundesministerium des Innern, Leitweg-ID: 04011000-12345-67: 10 Std. IT-Forensik à 120€ netto, zahlbar in 30 Tagen."></textarea>
+        </div>
+        <div class="sample-chips">
+          <button class="chip-btn" onclick="setErechnungPreset(1)">🏛️ Behörde B2G (Leitweg-ID BMI)</button>
+          <button class="chip-btn" onclick="setErechnungPreset(2)">🏢 B2B ZUGFeRD (Deutsche Bahn)</button>
+          <button class="chip-btn" onclick="setErechnungPreset(3)">🏙️ Stadtverwaltung Köln</button>
+        </div>
+        <div style="display:flex; gap:0.75rem;">
+          <button id="btnErechnung" class="btn-submit" onclick="runErechnung()" style="flex:1;">
+            <span>E-Rechnung generieren</span> ➔
+          </button>
+          <button id="btnDownloadPdf" class="btn-submit" onclick="downloadCurrentZugferdPdf()" style="background:#10b981; display:none;">
+            <span>⬇️ PDF/A-3 herunterladen</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-header">
+          <h3 class="card-title"><span>🛡️</span> EN 16931 Validierung &amp; XML Vorschau</h3>
+          <span class="tag-badge" id="erechnungStatus">Bereit</span>
+        </div>
+        <div class="output-container">
+          <div id="erechnungValidationBox" class="clause-box" style="display:none;"></div>
+          <pre id="erechnungXmlOutput" class="code-box">// Generierte XRechnung UBL / ZUGFeRD CII XML</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 7: Beleg-Scan & Vision OCR -->
+    <div id="tab-ocr" class="playground-grid tab-content" style="display:none;">
+      <div class="glass-card">
+        <div class="card-header">
+          <h3 class="card-title"><span>📸</span> Multimodale Beleg-Erfassung</h3>
+          <span class="tag-badge">POST /api/ocr-receipt</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Belegbild hochladen oder Musterbeleg wählen:</label>
+          <input type="file" id="receiptFileInput" accept="image/*" onchange="handleReceiptFile(this)" style="padding:0.4rem;">
+        </div>
+        <div class="sample-chips">
+          <button class="chip-btn" onclick="setOcrPreset(1)">☕ Bewirtungsbeleg Restaurant (70%)</button>
+          <button class="chip-btn" onclick="setOcrPreset(2)">⛽ Tankquittung Aral Diesel</button>
+          <button class="chip-btn" onclick="setOcrPreset(3)">🏨 Hotelrechnung Übernachtung (7%)</button>
+        </div>
+        <button id="btnOcr" class="btn-submit" onclick="runVisionOcr()">
+          <span>Beleg analysieren &amp; DATEV buchen</span> ➔
+        </button>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-header">
+          <h3 class="card-title"><span>📊</span> DATEV Buchung &amp; GoBD Prüfung</h3>
+          <span class="tag-badge" id="ocrStatus">Warten auf Bild</span>
+        </div>
+        <div class="output-container">
+          <div id="ocrExtfBox" class="clause-box" style="display:none; font-family:'JetBrains Mono', monospace; font-size:0.85rem;"></div>
+          <pre id="ocrJsonOutput" class="code-box">// Extrahierte Belegdaten &amp; DATEV Zuordnung</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 8: DATEV EXTF Stapel-Export -->
+    <div id="tab-datev-batch" class="playground-grid tab-content" style="display:none;">
+      <div class="glass-card">
+        <div class="card-header">
+          <h3 class="card-title"><span>📦</span> DATEV Format 700 Stapel-Generator</h3>
+          <span class="tag-badge">POST /api/datev-batch-export</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Buchungsliste für DATEV Rechnungswesen (JSON):</label>
+          <textarea id="datevBatchInput" style="min-height:160px;" placeholder="[{&quot;merchant_name&quot;: &quot;Aral&quot;, &quot;gross_amount&quot;: 85.00, &quot;vat_rate&quot;: 19.0, &quot;konto&quot;: &quot;4530&quot;}]"></textarea>
+        </div>
+        <div style="display:flex; gap:0.5rem;">
+          <button class="chip-btn" onclick="setDatevBatchPreset()">📋 4x Standard-Buchungen laden</button>
+        </div>
+        <div style="display:flex; gap:0.75rem;">
+          <button id="btnDatevBatch" class="btn-submit" onclick="runDatevBatchExport(false)" style="flex:1;">
+            <span>CSV generieren</span> ➔
+          </button>
+          <button class="btn-submit" onclick="runDatevBatchExport(true)" style="background:#8b5cf6;">
+            <span>ZIP Archiv herunterladen</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-header">
+          <h3 class="card-title"><span>📑</span> EXTF_Buchungsstapel.csv Vorschau</h3>
+          <span class="tag-badge" id="datevBatchStatus">Bereit</span>
+        </div>
+        <div class="output-container">
+          <pre id="datevBatchOutput" class="code-box">// Offizielle DATEV EXTF 700 CSV Zeilen</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 9: GoBD § 14 Pre-Audit -->
+    <div id="tab-audit" class="playground-grid tab-content" style="display:none;">
+      <div class="glass-card">
+        <div class="card-header">
+          <h3 class="card-title"><span>🛡️</span> Eingangsrechnungs-Prüfung (§ 14 Abs. 4 UStG)</h3>
+          <span class="tag-badge">POST /api/gobd-audit</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Text oder Daten der Eingangsrechnung:</label>
+          <textarea id="auditPrompt" placeholder="z.B. Rechnung von TechCorp GmbH, Betrag 1.200€ zzgl. 19% MwSt, Datum 15.02.2025, aber Steuernummer fehlt."></textarea>
+        </div>
+        <div class="sample-chips">
+          <button class="chip-btn" onclick="setAuditPreset(1)">✅ Vollständig konforme Rechnung</button>
+          <button class="chip-btn" onclick="setAuditPreset(2)">❌ Fehlende Steuernummer (Hohes Risiko)</button>
+          <button class="chip-btn" onclick="setAuditPreset(3)">⚠️ Fehlender Leistungszeitraum</button>
+        </div>
+        <button id="btnAudit" class="btn-submit" onclick="runGobdAudit()">
+          <span>GoBD-Prüfung starten</span> ➔
+        </button>
+      </div>
+
+      <div class="glass-card">
+        <div class="card-header">
+          <h3 class="card-title"><span>📋</span> Prüfbericht &amp; Vorsteuerabzug-Risiko</h3>
+          <span class="tag-badge" id="auditStatus">Bereit</span>
+        </div>
+        <div class="output-container">
+          <div id="auditReportBox" class="clause-box" style="display:none;"></div>
+          <pre id="auditRawOutput" class="code-box">// Audit Prüfprotokoll</pre>
+        </div>
+      </div>
+    </div>
+
   </main>
 
   <!-- Footer -->
@@ -1100,6 +1251,393 @@
       }
     }
 
+    // Base64 file download helper
+    function downloadBase64File(base64Data, filename, mimeType) {
+      const byteCharacters = atob(base64Data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // TAB 6: E-Rechnung & ZUGFeRD 2.3
+    let currentZugferdPdfBase64 = null;
+    let currentZugferdInvoiceNumber = 'RE-2025-001';
+
+    function setErechnungPreset(idx) {
+      const presets = {
+        1: "XRechnung an Bundesministerium des Innern, Leitweg-ID: 04011000-12345-67: 10 Std. IT-Forensik à 120€ netto, zahlbar in 30 Tagen.",
+        2: "ZUGFeRD Rechnung an Deutsche Bahn AG: 25x Netzwerkkabel Cat 7 à 14,50€, 2x Switch 24-Port à 380,00€, netto zzgl. 19% MwSt.",
+        3: "XRechnung an Stadt Köln, Leitweg-ID: 05315000-0001-89: 1x Sicherheitsanalyse Web-Portal 2.400,00€ netto zzgl. 19% USt."
+      };
+      document.getElementById('erechnungPrompt').value = presets[idx] || '';
+    }
+
+    async function runErechnung() {
+      const prompt = document.getElementById('erechnungPrompt').value.trim();
+      if (!prompt) return;
+      const btn = document.getElementById('btnErechnung');
+      const dlBtn = document.getElementById('btnDownloadPdf');
+      const statusBadge = document.getElementById('erechnungStatus');
+      const valBox = document.getElementById('erechnungValidationBox');
+      const xmlOut = document.getElementById('erechnungXmlOutput');
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Validiere & generiere...';
+      dlBtn.style.display = 'none';
+
+      try {
+        // Step 1: Call /api/xrechnung with as_xml=true
+        const res = await fetch('/api/xrechnung', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({prompt, as_xml: true})
+        });
+        const data = await res.json();
+        const invoiceData = data.json_data || {};
+        xmlOut.innerText = data.ubl_xml || JSON.stringify(invoiceData, null, 2);
+
+        // Step 2: Validate against KoSIT EN 16931 rules
+        let auditReport = null;
+        try {
+          const valRes = await fetch('/api/xrechnung-validate', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({invoice_data: invoiceData})
+          });
+          auditReport = await valRes.json();
+        } catch (ve) {
+          console.warn('Validator call error:', ve);
+        }
+
+        // Render validation badge & summary
+        valBox.style.display = 'block';
+        if (auditReport && auditReport.is_valid) {
+          statusBadge.innerText = '✅ EN 16931 Konform';
+          statusBadge.style.color = '#34d399';
+          valBox.style.borderLeftColor = '#10b981';
+          valBox.innerHTML = `<strong>✅ KoSIT EN 16931 Konformitäts-Prüfung bestanden</strong><br>` +
+            `<span style="color:var(--text-muted); font-size:0.85rem;">Profil: ${auditReport.profile} | Leitweg-ID: ${auditReport.buyer_reference || 'Keine (B2B)'} | Prüfungen: ${auditReport.checks_performed || 8} bestanden.</span>`;
+        } else if (auditReport) {
+          statusBadge.innerText = '⚠️ Mängel festgestellt';
+          statusBadge.style.color = '#fbbf24';
+          valBox.style.borderLeftColor = '#f59e0b';
+          const errList = (auditReport.errors || []).map(e => `<li>${e}</li>`).join('');
+          valBox.innerHTML = `<strong>⚠️ KoSIT EN 16931 Konformitäts-Warnung</strong><br>` +
+            `<ul style="margin:0.25rem 0 0 1.2rem; font-size:0.85rem;">${errList}</ul>`;
+        }
+
+        // Step 3: Generate hybrid ZUGFeRD 2.3 PDF/A-3
+        try {
+          const zRes = await fetch('/api/zugferd-generate', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({invoice_data: invoiceData, profile: 'EN 16931'})
+          });
+          const zData = await zRes.json();
+          if (zData.pdf_base64) {
+            currentZugferdPdfBase64 = zData.pdf_base64;
+            currentZugferdInvoiceNumber = zData.invoice_number || 'ZUGFeRD_Rechnung';
+            dlBtn.style.display = 'inline-flex';
+          }
+        } catch (ze) {
+          console.warn('ZUGFeRD PDF gen error:', ze);
+        }
+
+      } catch (e) {
+        xmlOut.innerText = `Fehler: ${e.message}`;
+        statusBadge.innerText = 'Fehlgeschlagen';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>E-Rechnung generieren</span> ➔';
+      }
+    }
+
+    function downloadCurrentZugferdPdf() {
+      if (!currentZugferdPdfBase64) return;
+      downloadBase64File(currentZugferdPdfBase64, `${currentZugferdInvoiceNumber}.pdf`, 'application/pdf');
+    }
+
+    // TAB 7: Beleg-Scan & Vision OCR
+    let currentReceiptBase64 = null;
+
+    function createSampleReceiptDataUrl(title, lines, total, vatRate) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 440;
+      canvas.height = 480;
+      const ctx = canvas.getContext('2d');
+
+      // Paper background
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+
+      // Header
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 18px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(title, canvas.width / 2, 45);
+
+      ctx.font = '12px monospace';
+      ctx.fillStyle = '#64748b';
+      ctx.fillText('Datum: 15.02.2025  Zeit: 14:22 Uhr', canvas.width / 2, 70);
+      ctx.fillText('------------------------------------------', canvas.width / 2, 85);
+
+      // Items
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#1e293b';
+      ctx.font = '13px monospace';
+      let y = 115;
+      lines.forEach(l => {
+        ctx.fillText(l.name, 30, y);
+        ctx.textAlign = 'right';
+        ctx.fillText(l.price, canvas.width - 30, y);
+        ctx.textAlign = 'left';
+        y += 24;
+      });
+
+      y += 10;
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#64748b';
+      ctx.fillText('==========================================', canvas.width / 2, y);
+
+      // Totals
+      y += 30;
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 16px monospace';
+      ctx.fillText('GESAMTBETRAG EUR', 30, y);
+      ctx.textAlign = 'right';
+      ctx.fillText(`${total.toFixed(2)} €`, canvas.width - 30, y);
+
+      y += 24;
+      ctx.textAlign = 'left';
+      ctx.font = '12px monospace';
+      ctx.fillStyle = '#475569';
+      const vatAmount = (total - total / (1 + vatRate / 100)).toFixed(2);
+      ctx.fillText(`inkl. ${vatRate}% MwSt: ${vatAmount} €`, 30, y);
+
+      y += 30;
+      ctx.textAlign = 'center';
+      ctx.font = '11px monospace';
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillText('* Vielen Dank für Ihren Besuch! *', canvas.width / 2, y);
+      ctx.fillText('Beleg elektronisch erfasst & GoBD archiviert', canvas.width / 2, y + 20);
+
+      return canvas.toDataURL('image/png').split(',')[1];
+    }
+
+    function handleReceiptFile(input) {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        currentReceiptBase64 = e.target.result.split(',')[1];
+        document.getElementById('ocrStatus').innerText = `${file.name} geladen`;
+        document.getElementById('ocrStatus').style.color = '#34d399';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function setOcrPreset(idx) {
+      if (idx === 1) {
+        currentReceiptBase64 = createSampleReceiptDataUrl('Restaurant Zum Hirschen', [
+          {name: '2x Tagesmenue Business', price: '76,00'},
+          {name: '1x San Pellegrino 0,75l', price: '7,50'},
+          {name: '2x Espresso', price: '6,40'}
+        ], 89.90, 19.0);
+        document.getElementById('ocrStatus').innerText = 'Bewirtungsbeleg geladen';
+      } else if (idx === 2) {
+        currentReceiptBase64 = createSampleReceiptDataUrl('Aral Tankstelle Nord', [
+          {name: 'Super E10  42,50 L', price: '74,38'},
+          {name: 'Scheibenreiniger 2L', price: '9,99'}
+        ], 84.37, 19.0);
+        document.getElementById('ocrStatus').innerText = 'Tankquittung geladen';
+      } else if (idx === 3) {
+        currentReceiptBase64 = createSampleReceiptDataUrl('Hotel Stadt Hamburg', [
+          {name: 'Uebernachtung Einzelzimmer', price: '120,00'},
+          {name: 'Kultur- und Tourismustaxe', price: '6,00'}
+        ], 126.00, 7.0);
+        document.getElementById('ocrStatus').innerText = 'Hotelbeleg geladen';
+      }
+      document.getElementById('ocrStatus').style.color = '#34d399';
+    }
+
+    async function runVisionOcr() {
+      if (!currentReceiptBase64) {
+        setOcrPreset(1);
+      }
+      const btn = document.getElementById('btnOcr');
+      const statusBadge = document.getElementById('ocrStatus');
+      const extfBox = document.getElementById('ocrExtfBox');
+      const jsonOut = document.getElementById('ocrJsonOutput');
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> OCR &amp; DATEV Analyse...';
+      statusBadge.innerText = 'Verarbeite...';
+
+      try {
+        const res = await fetch('/api/ocr-receipt', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({image_base64: currentReceiptBase64, chart: 'SKR03'})
+        });
+        const data = await res.json();
+        jsonOut.innerText = JSON.stringify(data, null, 2);
+        statusBadge.innerText = 'Analyse abgeschlossen';
+
+        const r = data.receipt || data;
+        const d = data.datev_classification || data.datev || {};
+        const extf = data.datev_buchungssatz || data.datev_extf_row || '-';
+
+        extfBox.style.display = 'block';
+        extfBox.innerHTML = `
+          <strong>Händler / Beleg:</strong> ${r.merchant_name || 'Unbekannt'} | Betrag: <strong>${(r.gross_amount || 0).toFixed(2)} €</strong><br>
+          <strong>DATEV Zuordnung:</strong> SKR03: <span style="color:#60a5fa; font-weight:bold;">${d.skr03_account || d.skr03 || '4900'}</span> | SKR04: <span style="color:#60a5fa; font-weight:bold;">${d.skr04_account || d.skr04 || '6300'}</span> (${d.category || 'Aufwand'})<br>
+          <strong>Steuerabzug:</strong> ${d.deductible_percent || 100}% steuerlich abzugsfähig (${d.legal_note || d.notes || 'Regelaufwand'})<br>
+          <div style="margin-top:0.5rem; padding:0.4rem; background:rgba(0,0,0,0.3); border-radius:6px; font-size:0.8rem; word-break:break-all;">
+            <strong>DATEV EXTF Zeile:</strong><br>${extf}
+          </div>
+        `;
+      } catch (e) {
+        jsonOut.innerText = `Fehler: ${e.message}`;
+        statusBadge.innerText = 'Fehler';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Beleg analysieren &amp; DATEV buchen</span> ➔';
+      }
+    }
+
+    // TAB 8: DATEV EXTF Stapel-Export
+    function setDatevBatchPreset() {
+      const records = [
+        {"merchant_name": "Aral Tankstelle", "date": "15.02.2025", "gross_amount": 86.30, "vat_rate": 19.0, "konto": "4530", "belegtext": "Tanken Dienstwagen"},
+        {"merchant_name": "Restaurant Hirsch", "date": "18.02.2025", "gross_amount": 128.40, "vat_rate": 19.0, "konto": "4650", "belegtext": "Bewirtung Mandant Q1"},
+        {"merchant_name": "Telekom Deutschland", "date": "20.02.2025", "gross_amount": 59.50, "vat_rate": 19.0, "konto": "4920", "belegtext": "Internet & Telefon"},
+        {"merchant_name": "Deutsche Bahn", "date": "22.02.2025", "gross_amount": 142.00, "vat_rate": 7.0, "konto": "4670", "belegtext": "Fahrtkosten Bahn 2. Kl"}
+      ];
+      document.getElementById('datevBatchInput').value = JSON.stringify(records, null, 2);
+    }
+
+    async function runDatevBatchExport(asZip) {
+      const raw = document.getElementById('datevBatchInput').value.trim();
+      let records;
+      try {
+        records = JSON.parse(raw);
+        if (!Array.isArray(records)) throw new Error('Eingabe muss ein JSON-Array sein.');
+      } catch (e) {
+        alert('Ungültiges JSON-Format: ' + e.message);
+        return;
+      }
+
+      const btn = document.getElementById('btnDatevBatch');
+      const statusBadge = document.getElementById('datevBatchStatus');
+      const output = document.getElementById('datevBatchOutput');
+
+      btn.disabled = true;
+      statusBadge.innerText = 'Generiere...';
+
+      try {
+        const res = await fetch('/api/datev-batch-export', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({records, chart: 'SKR03', as_zip: asZip})
+        });
+        const data = await res.json();
+
+        if (asZip && data.zip_base64) {
+          downloadBase64File(data.zip_base64, 'DATEV_UnternehmenOnline_Mandant10001.zip', 'application/zip');
+          output.innerText = `ZIP-Archiv erfolgreich erstellt (${data.file_size_bytes} Bytes) und heruntergeladen.\nEnthält EXTF_Buchungsstapel.csv und document.xml für DATEV Belegtransfer.`;
+          statusBadge.innerText = 'ZIP heruntergeladen';
+        } else if (data.csv_text) {
+          output.innerText = data.csv_text;
+          statusBadge.innerText = `${records.length} Buchungen exportiert`;
+          if (data.csv_base64) {
+            downloadBase64File(data.csv_base64, 'EXTF_Buchungsstapel.csv', 'text/csv;charset=utf-8');
+          }
+        }
+      } catch (e) {
+        output.innerText = `Fehler: ${e.message}`;
+        statusBadge.innerText = 'Fehler';
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // TAB 9: GoBD § 14 Pre-Audit
+    function setAuditPreset(idx) {
+      const presets = {
+        1: "Rechnung RE-2025-01 von Alpha IT Solutions GmbH, Steuernummer 27/123/45678, USt-IdNr DE123456789. Leistungszeitraum: 01.01.2025 bis 31.01.2025. 10 Std. Beratung à 100€ = 1.000€ netto + 19% USt (190€) = 1.190€ brutto. Zahlbar bis 15.02.2025 auf IBAN DE44500105175432109876.",
+        2: "Rechnung von Max Mustermann über 500,00 € für Webdesign. Keine Steuernummer, keine USt-IdNr, kein Leistungsdatum angegeben.",
+        3: "Rechnung RE-998 von CloudServices Ltd, Steuernummer 13/456/78901. Ausstellungsdatum 10.02.2025. Betrag 300,00 € netto + 57,00 € USt. Leistungszeitpunkt nicht genannt."
+      };
+      document.getElementById('auditPrompt').value = presets[idx] || '';
+    }
+
+    async function runGobdAudit() {
+      const invoice_text = document.getElementById('auditPrompt').value.trim();
+      if (!invoice_text) return;
+      const btn = document.getElementById('btnAudit');
+      const statusBadge = document.getElementById('auditStatus');
+      const reportBox = document.getElementById('auditReportBox');
+      const rawOut = document.getElementById('auditRawOutput');
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Prüfe § 14 Abs. 4...';
+      statusBadge.innerText = 'Prüfung läuft...';
+
+      try {
+        const res = await fetch('/api/gobd-audit', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({invoice_text})
+        });
+        const data = await res.json();
+        rawOut.innerText = JSON.stringify(data, null, 2);
+
+        reportBox.style.display = 'block';
+        const risk = (data.vorsteuerabzug_risk || data.risk_level || 'UNBEKANNT').toUpperCase();
+        if (risk.includes('KEIN') || risk.includes('LOW') || data.is_compliant === true) {
+          statusBadge.innerText = '✅ Konform';
+          statusBadge.style.color = '#34d399';
+          reportBox.style.borderLeftColor = '#10b981';
+          reportBox.innerHTML = `<strong>✅ Vorsteuerabzug uneingeschränkt gesichert</strong><br>` +
+            `<span style="color:var(--text-muted); font-size:0.85rem;">Alle gesetzlichen Pflichtangaben nach § 14 Abs. 4 UStG vorhanden.</span>`;
+        } else if (risk.includes('MITTEL') || risk.includes('MEDIUM')) {
+          statusBadge.innerText = '⚠️ Mittleres Risiko';
+          statusBadge.style.color = '#fbbf24';
+          reportBox.style.borderLeftColor = '#f59e0b';
+          reportBox.innerHTML = `<strong>⚠️ Nachbesserung vor Zahlung empfohlen</strong><br>` +
+            `<span style="color:var(--text-muted); font-size:0.85rem;">Fehlende Angaben: ${(data.missing_fields || []).join(', ') || 'Leistungszeitraum oder Steuernummer unvollständig'}</span>`;
+        } else {
+          statusBadge.innerText = '❌ Hohes Risiko';
+          statusBadge.style.color = '#f87171';
+          reportBox.style.borderLeftColor = '#ef4444';
+          reportBox.innerHTML = `<strong>❌ Vorsteuerabzug unzulässig (§ 14 Abs. 4 Mängel)</strong><br>` +
+            `<span style="color:var(--text-muted); font-size:0.85rem;">Kritische Mängel: ${(data.missing_fields || []).join(', ') || 'Steuernummer/USt-IdNr oder Rechnungsnummer fehlt'}. Rechnungsberichtigung anfordern!</span>`;
+        }
+
+      } catch (e) {
+        rawOut.innerText = `Fehler: ${e.message}`;
+        statusBadge.innerText = 'Fehler';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>GoBD-Prüfung starten</span> ➔';
+      }
+    }
+
     // Health check on load
     window.addEventListener('DOMContentLoaded', async () => {
       try {
@@ -1113,8 +1651,11 @@
           badge.innerHTML = '⚠️ Ollama nicht verbunden';
         }
       } catch (e) {}
-      // Load first preset by default
+      // Load initial presets
       setInvoicePreset(1);
+      setErechnungPreset(1);
+      setDatevBatchPreset();
+      setAuditPreset(1);
     });
   </script>
 </body>

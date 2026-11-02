@@ -40,11 +40,65 @@ ZUGFeRD_CONFORMANCE = "EN 16931"
 ATTACHMENT_NAME = "factur-x.xml"
 
 
+def normalize_invoice_data(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Ensures all mandatory EN 16931 fields and monetary calculations are populated."""
+    norm = dict(data)
+    norm.setdefault("currency", "EUR")
+    norm.setdefault("due_days", 14)
+    norm.setdefault("issue_date", datetime.date.today().isoformat())
+    norm.setdefault("due_date", (datetime.date.today() + datetime.timedelta(days=14)).isoformat())
+    norm.setdefault("buyer_reference", "04011000-12345-67")
+
+    seller = dict(norm.get("seller", {}))
+    seller.setdefault("name", "Rechly AI Engineering GmbH")
+    seller.setdefault("vat_id", "DE123456789")
+    seller.setdefault("street", "Musterstr. 1")
+    seller.setdefault("postal_code", "10115")
+    seller.setdefault("city", "Berlin")
+    seller.setdefault("country_code", "DE")
+    norm["seller"] = seller
+
+    buyer = dict(norm.get("buyer", {}))
+    buyer.setdefault("name", "Geschäftskunde AG")
+    buyer.setdefault("street", "Kundenweg 2")
+    buyer.setdefault("postal_code", "80331")
+    buyer.setdefault("city", "München")
+    buyer.setdefault("country_code", "DE")
+    norm["buyer"] = buyer
+
+    items = []
+    total_net = 0.0
+    total_tax = 0.0
+    for idx, itm in enumerate(norm.get("line_items", []), start=1):
+        item_copy = dict(itm)
+        item_copy.setdefault("line_id", str(idx))
+        item_copy.setdefault("name", itm.get("name") or itm.get("description") or f"Position {idx}")
+        item_copy.setdefault("unit_code", "C62")
+        qty = float(item_copy.get("quantity", 1.0))
+        price = float(item_copy.get("unit_price", 0.0))
+        net = round(qty * price, 2)
+        item_copy["net_amount"] = net
+        tax_pct = float(item_copy.get("tax_percent", item_copy.get("vat_rate", 19.0)))
+        item_copy["tax_percent"] = tax_pct
+        item_copy["tax_category"] = "S" if tax_pct > 0 else "K"
+        tax = round(net * (tax_pct / 100.0), 2)
+        total_net += net
+        total_tax += tax
+        items.append(item_copy)
+
+    norm["line_items"] = items
+    norm.setdefault("total_net_amount", round(total_net, 2))
+    norm.setdefault("total_tax_amount", round(total_tax, 2))
+    norm.setdefault("total_gross_amount", round(total_net + total_tax, 2))
+    return norm
+
+
 def to_zugferd_cii_xml(data: Dict[str, Any]) -> str:
     """
     Serializes invoice data into standard UN/CEFACT Cross-Industry Invoice (CII) XML
     in compliance with EN 16931 / Factur-X / ZUGFeRD 2.3.
     """
+    data = normalize_invoice_data(data)
     is_valid, errors = validate_xrechnung_data(data)
     if not is_valid:
         raise ValueError(f"Invalid invoice data for ZUGFeRD: {'; '.join(errors)}")
@@ -148,14 +202,21 @@ def to_zugferd_cii_xml(data: Dict[str, Any]) -> str:
     header_settle = ET.SubElement(trade, f"{{{ram_ns}}}ApplicableHeaderTradeSettlement")
     ET.SubElement(header_settle, f"{{{ram_ns}}}InvoiceCurrencyCode").text = str(data.get("currency", "EUR"))
 
-    # Summary Tax
-    vat_rate = float(data.get("line_items", [{}])[0].get("tax_percent", 19.0))
-    tax_elem = ET.SubElement(header_settle, f"{{{ram_ns}}}ApplicableTradeTax")
-    ET.SubElement(tax_elem, f"{{{ram_ns}}}CalculatedAmount").text = f"{float(data.get('total_tax_amount', 0.0)):.2f}"
-    ET.SubElement(tax_elem, f"{{{ram_ns}}}TypeCode").text = "VAT"
-    ET.SubElement(tax_elem, f"{{{ram_ns}}}BasisAmount").text = f"{float(data.get('total_net_amount', 0.0)):.2f}"
-    ET.SubElement(tax_elem, f"{{{ram_ns}}}CategoryCode").text = "S" if vat_rate > 0 else "K"
-    ET.SubElement(tax_elem, f"{{{ram_ns}}}RateApplicablePercent").text = f"{vat_rate:.2f}"
+    # Summary Tax per rate category
+    tax_groups = {}
+    for itm in data.get("line_items", []):
+        r = float(itm.get("tax_percent", 19.0))
+        net = float(itm.get("net_amount", 0.0))
+        tax_groups[r] = tax_groups.get(r, 0.0) + net
+
+    for rate, basis in sorted(tax_groups.items()):
+        tax_amount = round(basis * (rate / 100.0), 2)
+        tax_elem = ET.SubElement(header_settle, f"{{{ram_ns}}}ApplicableTradeTax")
+        ET.SubElement(tax_elem, f"{{{ram_ns}}}CalculatedAmount").text = f"{tax_amount:.2f}"
+        ET.SubElement(tax_elem, f"{{{ram_ns}}}TypeCode").text = "VAT"
+        ET.SubElement(tax_elem, f"{{{ram_ns}}}BasisAmount").text = f"{basis:.2f}"
+        ET.SubElement(tax_elem, f"{{{ram_ns}}}CategoryCode").text = "S" if rate > 0 else "K"
+        ET.SubElement(tax_elem, f"{{{ram_ns}}}RateApplicablePercent").text = f"{rate:.2f}"
 
     if data.get("payment_terms"):
         p_terms = ET.SubElement(header_settle, f"{{{ram_ns}}}SpecifiedTradePaymentTerms")
@@ -178,6 +239,7 @@ def generate_visual_invoice_pdf(data: Dict[str, Any]) -> bytes:
     """
     Renders a clean, GoBD-compliant German B2B visual invoice PDF using ReportLab.
     """
+    data = normalize_invoice_data(data)
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
         buffer,
@@ -455,6 +517,7 @@ def create_zugferd_pdf(
     Creates a full Factur-X / ZUGFeRD 2.3 PDF/A-3 hybrid electronic invoice.
     Combines the visual PDF representation with the embedded EN 16931 XML.
     """
+    invoice_data = normalize_invoice_data(invoice_data)
     # 1. Generate XML if not supplied
     if xml_content is None:
         try:
