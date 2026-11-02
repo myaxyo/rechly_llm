@@ -4,15 +4,15 @@
 [![Base Model](https://img.shields.io/badge/Base%20Model-Qwen%202.5%203B%20Instruct-brightgreen.svg)](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct)
 [![Hugging Face](https://img.shields.io/badge/Hugging%20Face-jonprompter%2Frechly--de--3b-yellow.svg)](https://huggingface.co/jonprompter/rechly-de-3b)
 [![Ollama Hub](https://img.shields.io/badge/Ollama%20Hub-jonprompter%2Frechly--de--3b-black.svg)](https://ollama.com/jonprompter/rechly-de-3b)
-[![Benchmark](https://img.shields.io/badge/Benchmark-Grade%20A%2B%20(77%2F77%20Verified)-success.svg)](scripts/benchmark_comprehensive.py)
+[![Benchmark](https://img.shields.io/badge/Evaluation%20Suite-77%2F77%20Passed%20(Internal)-brightgreen.svg)](scripts/benchmark_comprehensive.py)
 [![Colab T4](https://img.shields.io/badge/Colab%20Training-Free%20T4%20GPU%20($0)-orange.svg)](notebooks/rechly_de_3b_training_colab.ipynb)
 [![Test Suite](https://img.shields.io/badge/Tests-130%20Passed-emerald.svg)](tests/)
 [![ZUGFeRD 2.3](https://img.shields.io/badge/E--Rechnung-ZUGFeRD%202.3%20%2F%20Factur--X-blue.svg)](scripts/zugferd_generator.py)
 [![Receipt OCR](https://img.shields.io/badge/Vision%20OCR-Local%20Receipt%20Pipeline-purple.svg)](scripts/receipt_vision_ocr.py)
 [![DATEV Batch](https://img.shields.io/badge/DATEV%20EXTF-700%20Batch%20Exporter-teal.svg)](scripts/datev_batch_exporter.py)
-[![DSGVO Compliance](https://img.shields.io/badge/DSGVO%2FGDPR-100%25%20On--Device-blueviolet.svg)](#-specifications--highlights)
+[![Privacy by Design](https://img.shields.io/badge/Privacy%20by%20Design-100%25%20On--Device-blueviolet.svg)](#-specifications--highlights)
 
-**Rechly-DE-3B** is a specialized, lightweight (3 Billion parameters), privacy-first German accounting language model and research toolkit engineered specifically for **[Rechly](https://rechly.de)** and the German open-source AI ecosystem. It operates **100% locally** on Apple Silicon (M1/M2/M3/M4) and standard CPUs, providing complete **DSGVO / GDPR compliance** with zero data leaving your hardware.
+**Rechly-DE-3B** is a specialized, lightweight (3 Billion parameters), privacy-first German accounting language model and research toolkit engineered specifically for **[Rechly](https://rechly.de)** and the German open-source AI ecosystem. It operates **100% locally** on Apple Silicon (M1/M2/M3/M4) and standard CPUs with **zero cloud data egress**, ensuring sensitive business and tax data never leaves your hardware.
 
 ---
 
@@ -28,8 +28,8 @@
 | **Dataset Engine** | 100% Open-Source GoBD/UStG generation engine (1,280+ balanced, verified training pairs) |
 | **Training Cost** | **$0** (Free Colab T4 GPU or local Mac GPU) |
 | **Compliance Standards** | German **GoBD**, **UStG** (§ 14 Abs. 4, § 19, § 13b, § 4, § 25a, § 35a), **DATEV SKR03 / SKR04** (30+ accounts), **EN 16931 / XRechnung 3.0 / ZUGFeRD 2.3** |
-| **Formal Grammars** | Official **GBNF grammars** (`grammars/`) for mathematically constrained JSON schema adherence |
-| **Benchmark Score** | **100.0% (77/77 Passed, Grade A+)** across all 12 specialized accounting & compliance domains |
+| **Formal Grammars** | Formal **GBNF grammars** (`grammars/`) for mathematically constrained JSON schema adherence |
+| **Internal Test Suite** | **100.0% (77/77 Passed)** across 12 internal synthetic accounting & compliance domains |
 | **Serving Interfaces** | **Interactive 9-Tab Web Playground UI**, **FastAPI REST Gateway**, **OpenAI-compatible Proxy**, **Python SDK**, and **CLI** |
 
 ---
@@ -383,30 +383,32 @@ Includes 101 curated German tax edge cases (`data/rechly_preference_pairs.jsonl`
 
 ---
 
-## 📊 Comprehensive 77-Point Enterprise Audit Benchmark
+## 📊 Internal Synthetic Evaluation Suite (77 Test Vectors)
 
-Run the complete 77-point German accounting audit benchmark:
+Run the reproducible internal 77-point accounting evaluation suite:
 ```bash
 python scripts/benchmark_comprehensive.py --model rechly-de-3b
 # Or run instant engine-only verification:
 python scripts/benchmark_comprehensive.py --engine-only
 ```
 
-| Domain | Test Count | Pass Rate | Score | GoBD Compliance Level |
+*(Note: This is an internal synthetic evaluation harness developed to verify statutory edge cases and schema constraints; it does not constitute an external regulatory certification).*
+
+| Domain | Test Count | Pass Rate | Score | Evaluated Area |
 | :--- | :---: | :---: | :---: | :---: |
 | **Domain 1: Text-to-Invoice (Strict JSON)** | 10 | 100.0% | 10 / 10 | Valid JSON Schema & Multi-Item |
-| **Domain 2: B2B Line Item Rewriter** | 8 | 100.0% | 8 / 8 | Formal GoBD Terminology |
+| **Domain 2: B2B Line Item Rewriter** | 8 | 100.0% | 8 / 8 | Formal Commercial Terminology |
 | **Domain 3: German Tax & GoBD Clauses** | 10 | 100.0% | 10 / 10 | Exact UStG / AO Citations |
 | **Domain 4: Mahnwesen (Multi-Stage Dunning)** | 7 | 100.0% | 7 / 7 | Formal 3-Stage German Letters |
-| **Domain 5: DATEV SKR03/04 Expense Accounts** | 10 | 100.0% | 10 / 10 | Verified 30+ Accounts & Tax Rates |
+| **Domain 5: DATEV SKR03/04 Expense Accounts** | 10 | 100.0% | 10 / 10 | 30+ Standard Accounts & Tax Rates |
 | **Domain 6: E-Rechnung EN 16931 / XRechnung 3.0** | 4 | 100.0% | 4 / 4 | Leitweg-ID, Codes & UBL 2.1 XML |
 | **Domain 7: GoBD § 14 Abs. 4 UStG Pre-Audit** | 4 | 100.0% | 4 / 4 | Statutory Input VAT Risk Rating |
-| **Domain 8: DATEV Buchungssatz CSV (EXTF)** | 4 | 100.0% | 4 / 4 | Valid Semicolon EXTF Format |
+| **Domain 8: DATEV Buchungssatz CSV (EXTF)** | 4 | 100.0% | 4 / 4 | Semicolon EXTF Format Compliance |
 | **Domain 9: ZUGFeRD 2.3 Hybrid Engine** | 5 | 100.0% | 5 / 5 | ISO 19005-3 PDF/A-3 & Factur-X XML |
 | **Domain 10: Multimodal Vision OCR** | 5 | 100.0% | 5 / 5 | 70% Bewirtung & DATEV Mapping |
 | **Domain 11: Enterprise DATEV Batch Exporter** | 5 | 100.0% | 5 / 5 | Format 700 Header & DUO ZIP |
 | **Domain 12: Cent-Perfect Reconciler & § 35a** | 5 | 100.0% | 5 / 5 | § 35 UStDV Rounding & Labor Split |
-| **Total Enterprise Benchmark Score** | **77** | **100.0%** | **77 / 77** | **Grade A+ (100.0% PERFECT)** |
+| **Total Internal Benchmark Score** | **77** | **100.0%** | **77 / 77** | **100.0% Test Vector Pass Rate** |
 | **Production API Gateway Layer** | **77** | **100.0%** | **77 / 77** | **Guaranteed Enterprise Schema** |
 
 - **Average Query Latency:** **3.21 seconds** on Apple Silicon Metal GPU (~70–80 tokens/sec)
@@ -428,6 +430,22 @@ For the official Hugging Face Hub model card, GGUF weights, and GBNF grammars, s
 4. Ensure the **Server-URL** is `http://localhost:11434/v1` (or `http://localhost:8000/v1` for the API Gateway).
 5. Click **KI-Einstellungen speichern** and **KI testen**.
 6. The **Text-zu-Rechnung** prompt bar, line item optimizers, and dunning generator in Rechly will now run 100% privately, securely, and locally!
+
+---
+
+## ⚖️ Legal, GDPR & Benchmark Disclaimers
+
+### 1. No Tax Advice (Keine Steuerberatung)
+*Rechly-DE-3B is an open-source assistive language model and developer toolkit based on public German statutory standards (UStG, GoBD, EStG). It **does not replace certified tax advice** by an authorized German Steuerberater or certified tax professional (gem. StBerG / RDG).*
+
+### 2. GDPR / DSGVO & Data Protection by Design
+*The model runs 100% locally on-device with **zero external network egress**, directly supporting the technical objective of **Data Protection by Design & Default (Art. 25 GDPR / DSGVO)**. However, full legal GDPR compliance is an organizational obligation of the operating entity acting as the **Data Controller (Art. 4(7) GDPR)**. Using local software does not replace organizational compliance requirements.*
+
+### 3. Internal Synthetic Benchmark Notice
+*Reported benchmark numbers represent **internal, synthetic test suites** developed within this repository to evaluate statutory edge cases and schema constraints. They **do not constitute an independent audit, official government benchmark, or certification** by any statutory body or accredited laboratory.*
+
+### 4. Trademarks & Third-Party Notice
+*DATEV® is a registered trademark of DATEV eG. ZUGFeRD is a registered specification of FeRD / AWV e.V. Factur-X is a registered trademark of FNFE-MPE. This project is an independent open-source community toolkit and is **not affiliated with, endorsed by, or certified by DATEV eG, FeRD, or FNFE-MPE**.*
 
 ---
 

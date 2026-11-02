@@ -40,9 +40,9 @@ inference: false
 [![Ollama Model](https://img.shields.io/badge/Ollama-jonprompter%2Frechly--de--3b-000000?style=for-the-badge&logo=ollama&logoColor=white)](https://ollama.com/jonprompter/rechly-de-3b)
 [![Hugging Face](https://img.shields.io/badge/Hugging%20Face-jonprompter%2Frechly--de--3b-yellow?style=for-the-badge&logo=huggingface&logoColor=white)](https://huggingface.co/jonprompter/rechly-de-3b)
 [![GitHub](https://img.shields.io/badge/GitHub-myaxyo%2Frechly__llm-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/myaxyo/rechly_llm)
-[![Audit Score](https://img.shields.io/badge/Audit%20Benchmark-100.0%25%20(Grade%20A%2B)-brightgreen?style=for-the-badge)](#-comprehensive-audit-benchmark)
+[![Evaluation Suite](https://img.shields.io/badge/Evaluation%20Suite-77%2F77%20Passed%20(Internal)-brightgreen?style=for-the-badge)](#-internal-synthetic-evaluation-suite)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue?style=for-the-badge)](LICENSE)
-[![DSGVO Compliance](https://img.shields.io/badge/DSGVO%20%2F%20GDPR-100%25%20Local%20(Zero%20Egress)-success?style=for-the-badge)](#-dsgvo--data-privacy-guarantee)
+[![Privacy by Design](https://img.shields.io/badge/Privacy%20by%20Design-100%25%20Local%20(Zero%20Egress)-blueviolet?style=for-the-badge)](#-privacy-by-design--data-handling)
 
 **The specialized 3-Billion parameter Small Language Model (SLM) for German Invoicing, the 2025/2026 E-Rechnung Mandate (EN 16931, XRechnung 3.0, ZUGFeRD 2.3), GoBD Pre-Audit, and DATEV SKR03/04 Bookkeeping.**
 
@@ -107,34 +107,34 @@ ollama run rechly-de-0.5b
 
 Under the **Wachstumschancengesetz (§ 14 UStG)**, traditional paper invoices and standard unstructured PDFs are **legally obsolete** for domestic B2B transactions. Over **3.5 million German companies** are legally mandated to process structured **E-Rechnungen (EN 16931, XRechnung 3.0, ZUGFeRD 2.3)**.
 
-### The Problem with Cloud AI (OpenAI / Anthropic):
-- **DSGVO / GDPR Compliance Violations:** Financial invoices, customer names, hourly rates, and bank accounts cannot legally be transmitted to third-party US cloud servers without strict data processing agreements and severe audit risks.
-- **Expensive Token Costs:** Ingesting lengthy XML structures and receipts quickly racks up monthly API bills.
-- **Hallucinations on German Tax Law:** Generic foundation models frequently hallucinate non-existent DATEV accounts, misapply the 70% Bewirtung limit (§ 4 Abs. 5 EStG), or forget statutory tax-exemption clauses (§ 19 UStG, § 13b UStG).
+### The Challenge with Cloud AI Services:
+- **Privacy & Data Governance Concerns:** Invoices, client names, hourly rates, and bank accounts contain sensitive personal and financial data. Processing them on third-party cloud servers requires Data Processing Agreements (DPA / AVV) and careful risk assessment under GDPR / DSGVO.
+- **Token Costs:** Processing verbose XML structures, long invoices, and receipt scans can lead to significant ongoing API operational costs.
+- **Domain Accuracy on German Tax Law:** General-purpose foundation models frequently misapply German statutory rules, such as confusing DATEV account numbers, misapplying the 70% entertainment expense deductibility cap (§ 4 Abs. 5 Nr. 2 EStG), or omitting statutory tax-exemption notices (§ 19 UStG, § 13b UStG).
 
-### The Rechly-DE-3B Solution:
-- **100% Local & Offline:** Complete DSGVO / GoBD compliance with **0 bytes of data egress**.
-- **Specialized Accounting Engine:** Fine-tuned on curated statutory German tax law and 30+ standard DATEV SKR03/SKR04 accounts.
-- **Ultra-Lightweight & Fast:** 1.84 GB GGUF Q4_K_M running at **60–80+ tokens/sec** on standard Apple Silicon or CPU with **< 2.5 GB RAM**.
-- **Mathematical Guarantees:** Ships with official **GBNF grammars** (`grammars/*.gbnf`) ensuring 100% JSON schema adherence without syntax errors.
+### The Rechly-DE-3B Architecture:
+- **100% Local & Offline (Zero Data Egress):** Operates entirely on-device, preventing external data transmission and supporting the principle of Data Protection by Design (Art. 25 GDPR).
+- **Specialized Accounting Adaptation:** Fine-tuned on curated statutory German tax law and 30+ commonly used DATEV SKR03/SKR04 accounts.
+- **Lightweight Footprint:** 1.93 GB GGUF Q4_K_M running at **60–80+ tokens/sec** on Apple Silicon or standard CPU with **< 2.5 GB RAM**.
+- **Formal Grammars:** Ships with pre-configured **GBNF grammars** (`grammars/*.gbnf`) for mathematically constrained JSON schema adherence.
 
 ---
 
-## 📊 Benchmark: Rechly-DE-3B vs. General LLMs
+## 📊 Internal Synthetic Evaluation Suite: Rechly-DE-3B vs. General LLMs
 
-Rechly-DE-3B was audited against base models across 77 rigorous test cases covering German tax law, DATEV account assignment, and GoBD compliance:
+Rechly-DE-3B was evaluated against base foundation models using an **internal synthetic test suite of 77 reproducible test vectors** covering German tax provisions, DATEV account assignment, and formal JSON formatting. *(Note: This is an internal project test suite and does not represent an external regulatory certification).*
 
-| Evaluation Criteria | Qwen2.5-3B (Base) | Llama 3 (8B) | Mistral (7B) | **Rechly-DE-3B (Ours)** |
+| Evaluation Domain | Qwen2.5-3B (Base) | Llama 3 (8B) | Mistral (7B) | **Rechly-DE-3B (Ours)** |
 | :--- | :---: | :---: | :---: | :---: |
 | **Model Size / RAM** | 3B (~2.5 GB) | 8B (~6.0 GB) | 7B (~5.5 GB) | **3B (< 2.5 GB RAM)** |
-| **Local Offline Inference** | ✅ Yes | ✅ Yes | ✅ Yes | **✅ Yes (100% Local)** |
-| **GoBD Tax Accuracy (§ 19, § 13b, § 4, § 35a)** | 25.0% (Poor) | 58.0% (Fair) | 62.0% (Fair) | **100.0% (PERFECT)** |
-| **DATEV SKR03 & SKR04 Accuracy** | 10.0% (Hallucinates) | 45.0% (Inaccurate) | 40.0% (Inaccurate) | **100.0% (30+ Verified Accounts)** |
-| **E-Rechnung EN 16931 / Leitweg-ID** | 15.0% (Invalid BT-10) | 50.0% (Incomplete) | 48.0% (Incomplete) | **100.0% (XRechnung 3.0 & ZUGFeRD)** |
-| **ZUGFeRD 2.3 PDF/A-3 Hybrid Output** | ❌ No | ❌ No | ❌ No | **✅ Native Built-in Generator** |
-| **Multimodal Receipt OCR Pipeline** | ❌ No | ❌ No | ❌ No | **✅ Built-in (Qwen2.5-VL)** |
-| **Enterprise DATEV EXTF 700 Batch Exporter** | ❌ No | ❌ No | ❌ No | **✅ Turnkey CSV & DUO ZIP** |
-| **77-Point Comprehensive Audit Score** | 22.0% (Grade F) | 54.5% (Grade D) | 58.4% (Grade D) | **100.0% (77/77 Passed, Grade A+)** |
+| **Local Offline Inference** | ✅ Yes | ✅ Yes | ✅ Yes | **✅ Yes (Zero Egress)** |
+| **GoBD Tax Accuracy (§ 19, § 13b, § 4, § 35a)** | 25.0% | 58.0% | 62.0% | **100.0% (77/77 internal tests)** |
+| **DATEV SKR03 & SKR04 Mapping** | 10.0% (Hallucinates) | 45.0% | 40.0% | **100.0% (30+ Verified Accounts)** |
+| **E-Rechnung EN 16931 / Leitweg-ID** | 15.0% (Invalid BT-10) | 50.0% | 48.0% | **100.0% (XRechnung 3.0 & ZUGFeRD)** |
+| **ZUGFeRD 2.3 PDF/A-3 Hybrid Output** | ❌ No | ❌ No | ❌ No | **✅ Built-in Generator Script** |
+| **Multimodal Receipt OCR Pipeline** | ❌ No | ❌ No | ❌ No | **✅ Integrated Pipeline (Qwen2.5-VL)** |
+| **DATEV EXTF Format 700 Batch Exporter** | ❌ No | ❌ No | ❌ No | **✅ Conforming CSV & DUO ZIP Export** |
+| **Internal Synthetic Test Suite Score** | 22.0% (17/77) | 54.5% (42/77) | 58.4% (45/77) | **100.0% (77/77 Passed)** |
 
 ---
 
@@ -191,22 +191,22 @@ Drafts legally disciplined payment reminders across German commercial stages:
 - **Stufe 2:** 1. Mahnung (formell mit 7-Tage-Nachfrist)
 - **Stufe 3:** Letzte Mahnung (bestimmt, Ankündigung gerichtlicher Schritte und Inkassokosten)
 
-### 9. Enterprise DATEV EXTF 700 Batch & DUO ZIP Exporter
-Exports batches of booking entries directly into official DATEV Format 700:
-- Exact 27-to-31-column semicolon header structure with automatic BU-Schlüssel (9, 8, 3, 2, 94).
-- Turnkey `DATEV Unternehmen online` (DUO) ZIP packages containing `EXTF_Buchungsstapel.csv` and XML manifest (`document.xml`).
-- Dual-encoding guarantee (CP1252 and UTF-8-SIG) preventing import rejections in DATEV Kanzlei-Rechnungswesen.
+### 9. DATEV EXTF 700 Batch & DUO ZIP Export Utility
+Exports batches of booking entries according to the DATEV Format 700 specification (independent community implementation):
+- 27-to-31-column semicolon format with standard BU-Schlüssel (9, 8, 3, 2, 94).
+- `DATEV Unternehmen online` (DUO) compatible ZIP structure containing `EXTF_Buchungsstapel.csv` and XML manifest (`document.xml`).
+- Dual-encoding support (CP1252 and UTF-8-SIG) for compatibility with DATEV Kanzlei-Rechnungswesen import tools.
 
-### 10. Cent-Perfect Reconciler & § 35a Handwerkerleistungen Splitter
-Guarantees commercial rounding (§ 35 UStDV) and statutory tax reductions:
-- Reconciles mixed-rate tax groupings (19%, 7%, 0%) with cent-perfect arithmetic.
+### 10. Mathematical Reconciler & § 35a Handwerkerleistungen Splitter
+Applies commercial rounding (§ 35 UStDV) and statutory tax reductions:
+- Reconciles mixed-rate tax groupings (19%, 7%, 0%) with cent-exact arithmetic.
 - Automatically isolates craftsman labor and travel costs from materials under **§ 35a Abs. 3 EStG**, calculating the eligible 20% direct tax reduction (capped at 1.200 € p.a.).
 
 ---
 
 ## 🔬 DPO / ORPO Preference Alignment Dataset
 
-To guarantee zero tolerance for legal hallucinations, Rechly-DE-3B includes a curated preference alignment dataset (`data/rechly_preference_pairs.jsonl`) with 101 precision `(prompt, chosen, rejected)` pairs.
+To reduce legal hallucinations on German accounting rules, Rechly-DE-3B includes a curated preference alignment dataset (`data/rechly_preference_pairs.jsonl`) with 101 `(prompt, chosen, rejected)` pairs.
 
 - **Negative samples (`rejected`)** capture critical real-world failure modes:
   - Charging 19% VAT on Kleinunternehmer invoices (violating § 19 UStG and triggering § 14c tax liabilities).
@@ -217,9 +217,9 @@ To guarantee zero tolerance for legal hallucinations, Rechly-DE-3B includes a cu
 
 ---
 
-## 🔒 GBNF Grammars: 100% Schema Guarantees
+## 🔒 GBNF Grammars: Formal Schema Constraints
 
-In financial production systems, JSON schema validation cannot rely on luck. Rechly-DE-3B includes official GBNF (GGML BNF) grammar files:
+In financial production systems, JSON schema validation cannot rely on unconstrained generation. Rechly-DE-3B includes formal GBNF (GGML BNF) grammar files:
 - [`grammars/invoice.gbnf`](https://huggingface.co/jonprompter/rechly-de-3b/blob/main/grammars/invoice.gbnf): Constrains token sampling strictly to valid invoice JSON.
 - [`grammars/expense.gbnf`](https://huggingface.co/jonprompter/rechly-de-3b/blob/main/grammars/expense.gbnf): Restricts outputs to verified 4-digit DATEV accounts and valid tax rates.
 - [`grammars/xrechnung.gbnf`](https://huggingface.co/jonprompter/rechly-de-3b/blob/main/grammars/xrechnung.gbnf): Enforces valid EN 16931 / XRechnung 3.0 structure.
@@ -263,15 +263,25 @@ curl -X POST http://localhost:11434/api/chat -d '{
 ## 👥 Who Is This For?
 
 1. **Developers & SaaS Founders:** Build automated German invoicing and E-Rechnung features into your CRM, ERP, or SaaS without paying OpenAI API fees.
-2. **Freelancers & Small Businesses (Selbstständige / KMU):** Automate invoice creation and expense sorting on your MacBook Air with 100% DSGVO privacy.
-3. **Tax Advisors & Bookkeepers (Steuerberater / Kanzleien):** Speed up receipt pre-sorting and generate direct DATEV EXTF semicolon CSV files ready for import into DATEV Rechnungswesen.
-4. **Enterprises & Privacy-Conscious Organizations:** Run specialized AI on air-gapped on-premise infrastructure with zero risk of data leakage.
+2. **Freelancers & Small Businesses (Selbstständige / KMU):** Automate invoice drafting and expense categorization on your own local device without third-party cloud data exposure.
+3. **Tax Advisors & Bookkeepers (Steuerberater / Kanzleien):** Speed up receipt pre-sorting and generate DATEV EXTF-compatible semicolon CSV files ready for import review.
+4. **Enterprises & Privacy-Conscious Organizations:** Run specialized accounting assistants on air-gapped on-premise infrastructure with zero risk of external cloud data egress.
 
 ---
 
-## ⚖️ Legal & Compliance Disclaimer
+## ⚖️ Legal, GDPR & Benchmark Disclaimers
 
-*Rechly-DE-3B provides automated assistance based on German statutory tax standards (UStG, GoBD, EStG, DATEV). It is an open-source productivity tool and does not replace certified tax advice by an authorized German Steuerberater.*
+### 1. No Tax Advice (Keine Steuerberatung)
+*Rechly-DE-3B provides automated text extraction and schema-constrained formatting based on public German statutory standards (UStG, GoBD, EStG). It is an open-source productivity tool and **does not replace certified tax advice** by an authorized German Steuerberater or certified tax professional (gem. StBerG / RDG).*
+
+### 2. GDPR / DSGVO & Data Protection by Design
+*The model runs 100% locally on-device with **zero external network egress** to third-party AI APIs, supporting technical data confidentiality and the principle of **Data Protection by Design & Default (Art. 25 GDPR / DSGVO)**. However, legal GDPR compliance is an organizational responsibility of the entity acting as the **Data Controller (Art. 4(7) GDPR)**. Using local software does not automatically grant a certification of full organizational compliance (e.g. data retention policies, access permissions, and lawful basis under Art. 6 GDPR).*
+
+### 3. Internal Synthetic Benchmark Notice
+*All benchmark scores (including the 77-case evaluation suite) represent **internal, self-reported synthetic test suites** developed within this repository to verify statutory edge cases and schema validity. They **do not constitute an independent audit, official government benchmark, or certification** by any statutory authority, standard-setting body, or accredited testing laboratory.*
+
+### 4. Trademarks & Third-Party Notice
+*DATEV® is a registered trademark of DATEV eG. ZUGFeRD is a registered specification of the Forum elektronische Rechnung Deutschland (FeRD / AWV e.V.). Factur-X is a registered trademark of FNFE-MPE. This project is an independent open-source community toolkit and is **not affiliated with, endorsed by, or certified by DATEV eG, FeRD, or FNFE-MPE**.*
 
 ---
 

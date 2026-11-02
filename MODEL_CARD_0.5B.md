@@ -38,7 +38,7 @@ inference: false
 [![Hugging Face](https://img.shields.io/badge/Hugging%20Face-jonprompter%2Frechly--de--0.5b-yellow?style=for-the-badge&logo=huggingface&logoColor=white)](https://huggingface.co/jonprompter/rechly-de-0.5b)
 [![GitHub](https://img.shields.io/badge/GitHub-myaxyo%2Frechly__llm-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/myaxyo/rechly_llm)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue?style=for-the-badge)](LICENSE)
-[![DSGVO Compliance](https://img.shields.io/badge/DSGVO%20%2F%20GDPR-100%25%20Local%20(Zero%20Egress)-success?style=for-the-badge)](#-dsgvo--data-privacy-guarantee)
+[![Privacy by Design](https://img.shields.io/badge/Privacy%20by%20Design-100%25%20Local%20(Zero%20Egress)-blueviolet?style=for-the-badge)](#-legal-gdpr--benchmark-disclaimers)
 
 **The pocket-sized 0.5-Billion parameter Nano Language Model for German Invoicing, the 2025/2026 E-Rechnung Mandate (EN 16931, XRechnung 3.0), and DATEV SKR03/04 Bookkeeping.**
 
@@ -103,6 +103,22 @@ print(resp.json()["message"]["content"])
 2. **DATEV Account Matching**: Quick lookups for SKR03 and SKR04 chart accounts.
 3. **GoBD Pre-Auditing**: Edge validation of incoming supplier receipts.
 4. **B2B Position Text Formalizer**: Rewrites colloquial notes into standard invoice descriptions.
+
+---
+
+## ⚖️ Legal, GDPR & Benchmark Disclaimers
+
+### 1. No Tax Advice (Keine Steuerberatung)
+*Rechly-DE-0.5B provides automated text extraction and schema formatting based on public statutory standards. It is an open-source productivity tool and **does not replace certified tax advice** by an authorized Steuerberater (gem. StBerG / RDG).*
+
+### 2. GDPR / DSGVO Notice
+*The model runs locally on-device with zero network egress, supporting **Data Protection by Design & Default (Art. 25 GDPR)**. However, legal GDPR compliance remains the responsibility of the entity acting as the **Data Controller (Art. 4(7) GDPR)**.*
+
+### 3. Internal Synthetic Benchmark Notice
+*Reported performance figures represent **internal, synthetic test cases** developed within this project. They do not constitute an official government audit or certified third-party endorsement.*
+
+### 4. Trademarks & Third-Party Notice
+*DATEV® is a registered trademark of DATEV eG. ZUGFeRD is a registered specification of FeRD / AWV e.V. This project is an independent community project and is not affiliated with or endorsed by DATEV eG or FeRD.*
 
 ---
 

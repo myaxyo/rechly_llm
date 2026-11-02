@@ -37,9 +37,9 @@ inference: false
 
 [![Hugging Face](https://img.shields.io/badge/Hugging%20Face-jonprompter%2Frechly--de--1.5b-yellow?style=for-the-badge&logo=huggingface&logoColor=white)](https://huggingface.co/jonprompter/rechly-de-1.5b)
 [![GitHub](https://img.shields.io/badge/GitHub-myaxyo%2Frechly__llm-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/myaxyo/rechly_llm)
-[![Audit Score](https://img.shields.io/badge/Audit%20Benchmark-Grade%20A%2B-brightgreen?style=for-the-badge)](#-specifications)
+[![Evaluation Suite](https://img.shields.io/badge/Evaluation%20Suite-77%2F77%20Passed%20(Internal)-brightgreen?style=for-the-badge)](#-specifications)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue?style=for-the-badge)](LICENSE)
-[![DSGVO Compliance](https://img.shields.io/badge/DSGVO%20%2F%20GDPR-100%25%20Local%20(Zero%20Egress)-success?style=for-the-badge)](#-dsgvo--data-privacy-guarantee)
+[![Privacy by Design](https://img.shields.io/badge/Privacy%20by%20Design-100%25%20Local%20(Zero%20Egress)-blueviolet?style=for-the-badge)](#-legal-gdpr--benchmark-disclaimers)
 
 **The ultra-lightweight 1.5-Billion parameter Small Language Model (SLM) for German Invoicing, the 2025/2026 E-Rechnung Mandate (EN 16931, XRechnung 3.0, ZUGFeRD 2.3), GoBD Pre-Audit, and DATEV SKR03/04 Bookkeeping.**
 
@@ -94,8 +94,8 @@ print(resp.json()["message"]["content"])
 | **Quantization** | GGUF `Q4_K_M` (~940 MB file size) |
 | **RAM Footprint** | **~1.0 GB RAM** (Runs comfortably on 1 GB VPS, Cloud Run, Micro Instances) |
 | **Inference Speed** | **120+ tokens/sec** on Apple Silicon Metal / **0.7s per query** |
-| **Domain Benchmark** | **100.0% Pass (Grade A+)** on E-Rechnung XRechnung 3.0 & DATEV SKR |
-| **Zero-Footprint Guarantee** | Hybrid ZUGFeRD 2.3 PDF/A-3, DATEV EXTF 700 Batch Exporter, and Cent-Perfect Reconciler run deterministically in Python with 0 MB LLM memory overhead |
+| **Internal Test Suite** | **100.0% Pass (77/77 internal tests)** on synthetic E-Rechnung XRechnung 3.0 & DATEV SKR edge cases |
+| **Zero-Footprint Utilities** | Hybrid ZUGFeRD 2.3 PDF/A-3 generator, DATEV EXTF 700 batch utility, and reconciler run deterministically in Python with 0 MB LLM memory overhead |
 
 ---
 
@@ -103,10 +103,26 @@ print(resp.json()["message"]["content"])
 
 1. **Text-to-Invoice (Strict JSON Extraction)**: Automatic detection of Kleinunternehmer (§ 19 UStG), Reverse Charge (§ 13b UStG, § 3a UStG), and Export (§ 4 Nr. 1a UStG).
 2. **E-Rechnung EN 16931 / XRechnung 3.0**: Validated BT-10 Leitweg-ID extraction and UBL 2.1 XML serialization.
-3. **DATEV SKR03 / SKR04 Auto-Booking**: 30+ chart accounts with statutory 70% Bewirtung limits.
-4. **GoBD § 14 Abs. 4 Pre-Audit**: Pre-checks incoming invoices to protect Vorsteuerabzug.
+3. **DATEV SKR03 / SKR04 Mapping**: 30+ chart accounts with statutory 70% Bewirtung limits.
+4. **GoBD § 14 Abs. 4 Pre-Audit**: Pre-checks incoming invoices to assist in identifying missing mandatory items.
 5. **Multi-Stage Mahnwesen**: Dunning letters for Stufe 1, 2, and 3.
-6. **B2B Line Item Rewriter**: Formalizes informal notes into audit-proof position texts.
+6. **B2B Line Item Rewriter**: Formalizes informal notes into professional position texts.
+
+---
+
+## ⚖️ Legal, GDPR & Benchmark Disclaimers
+
+### 1. No Tax Advice (Keine Steuerberatung)
+*Rechly-DE-1.5B provides automated text extraction and schema formatting based on public statutory standards. It is an open-source productivity tool and **does not replace certified tax advice** by an authorized Steuerberater (gem. StBerG / RDG).*
+
+### 2. GDPR / DSGVO Notice
+*The model runs locally on-device with zero network egress, supporting **Data Protection by Design & Default (Art. 25 GDPR)**. However, legal GDPR compliance remains the responsibility of the entity acting as the **Data Controller (Art. 4(7) GDPR)**.*
+
+### 3. Internal Synthetic Benchmark Notice
+*Reported benchmark figures represent **internal, synthetic test suites** developed within this project. They do not constitute an official government audit or certified third-party endorsement.*
+
+### 4. Trademarks & Third-Party Notice
+*DATEV® is a registered trademark of DATEV eG. ZUGFeRD is a registered specification of FeRD / AWV e.V. This project is an independent community project and is not affiliated with or endorsed by DATEV eG or FeRD.*
 
 ---
 
