@@ -84,9 +84,9 @@ print(resp.json()["message"]["content"])
 
 | Model Tier | Base Architecture | Format / Quant | Model Size | RAM Footprint | Inference Latency | Target Deployment |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Rechly-DE-3B** *(Flagship)* | `Qwen2.5-3B-Instruct` | GGUF `Q4_K_M` | **1.84 GB** | **~2.4 GB RAM** | ~1.5s / query | Desktop, M1/M2/M3/M4 Mac, Production Server |
-| **Rechly-DE-1.5B** *(Slim)* | `Qwen2.5-1.5B-Instruct` | GGUF `Q4_K_M` | **986 MB** | **~1.0 GB RAM** | ~0.7s / query | 1 GB VPS, Micro-Instances, Cloud Run, CI/CD |
-| **Rechly-DE-0.5B** *(Nano)* | `Qwen2.5-0.5B-Instruct` | GGUF `Q4_K_M` | **397 MB** | **~500 MB RAM** | ~0.3s / query | Raspberry Pi 4/5, Edge Devices, Embedded IoT |
+| **[Rechly-DE-3B](https://huggingface.co/jonprompter/rechly-de-3b)** *(Flagship)* | `Qwen2.5-3B-Instruct` | GGUF `Q4_K_M` | **1.84 GB** | **~2.4 GB RAM** | ~1.5s / query | Desktop, M1/M2/M3/M4 Mac, Production Server |
+| **[Rechly-DE-1.5B](https://huggingface.co/jonprompter/rechly-de-1.5b)** *(Slim)* | `Qwen2.5-1.5B-Instruct` | GGUF `Q4_K_M` | **940 MB** | **~1.0 GB RAM** | ~0.7s / query | 1 GB VPS, Micro-Instances, Cloud Run, CI/CD |
+| **[Rechly-DE-0.5B](https://huggingface.co/jonprompter/rechly-de-0.5b)** *(Nano)* | `Qwen2.5-0.5B-Instruct` | GGUF `Q4_K_M` | **379 MB** | **~500 MB RAM** | ~0.3s / query | Raspberry Pi 4/5, Edge Devices, Embedded IoT |
 
 ```bash
 # Pull & Run Flagship (3B)
